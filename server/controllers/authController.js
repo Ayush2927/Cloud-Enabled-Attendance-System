@@ -4,9 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-/*
-    Generate access and refresh tokens
-*/
+
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
         const user = await User.findById(userId);
@@ -27,10 +25,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
     }
 };
 
-/*
-    Register User
-*/
-// ADDED 'next' HERE
+
 const registerUser = asyncHandler(async (req, res, next) => {
     const { email, name, role, password } = req.body;
 
@@ -58,10 +53,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
     );
 });
 
-/*
-    Login User
-*/
-// ADDED 'next' HERE
+
 const loginUser = asyncHandler(async (req, res, next) => {
     const { email, password } = req.body;
 
@@ -99,15 +91,12 @@ const loginUser = asyncHandler(async (req, res, next) => {
         );
 });
 
-/*
-    Logout User
-*/
-// ADDED 'next' HERE
+
 const logoutUser = asyncHandler(async (req, res, next) => {
     await User.findByIdAndUpdate(
         req.user._id,
         { $set: { refreshToken: null } },
-        { new: true }
+        { returnDocument:'after'}
     );
 
     const options = {
@@ -122,10 +111,7 @@ const logoutUser = asyncHandler(async (req, res, next) => {
         .json(new ApiResponse(200, {}, "User logged out"));
 });
 
-/*
-    Refresh Access Token
-*/
-// ADDED 'next' HERE
+
 const refreshAccessToken = asyncHandler(async (req, res, next) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
