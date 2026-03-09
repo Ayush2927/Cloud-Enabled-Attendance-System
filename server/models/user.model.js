@@ -12,6 +12,18 @@ const UserSchema = new mongoose.Schema(
         type: String, 
         enum: ["Teacher", "Student", "Admin"], 
         default: "Student" 
+    },
+    pcMac:{
+        type:String,
+       default:null 
+    },
+    mobileMac:{
+        type:String,
+        default:null
+    },
+    subjects:{
+        type:String,
+        
     }
 }, { timestamps: true });
 

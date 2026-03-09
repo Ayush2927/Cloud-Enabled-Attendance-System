@@ -50,7 +50,7 @@ app.use("/api/v1/attendance",attendanceRoutes)
 
 app.use((err, req, res, next) => {
 
-    console.error("❌ ERROR CAUGHT:");
+    console.error(" ERROR CAUGHT:");
     console.error("Status:", err.statusCode || 500);
     console.error("Message:", err.message);
     console.error("Stack:", err.stack);

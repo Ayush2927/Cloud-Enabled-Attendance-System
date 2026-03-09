@@ -26,6 +26,15 @@ const attendanceSchema=new Schema({
     type:String,
     enum:["Present","Absent","Late","Half-day"],
     default:"Present"
+   },
+
+   subjectCode:{
+      type:String,
+      required:true
+   },
+   macUsed:{
+      type:String,
+      default:null
    }
    
 },  {timestamps:true});
