@@ -24,22 +24,19 @@ const attendanceSchema=new Schema({
 
    status:{
     type:String,
-    enum:["Present","Absent","Late","Half-day"],
+    enum:["Present","Absent","Late","Session_Started"],
     default:"Present"
    },
 
    subjectCode:{
       type:String,
       required:true
-   },
-   macUsed:{
-      type:String,
-      default:null
    }
+  
    
 },  {timestamps:true});
 
-attendanceSchema.index({user:1,date:1},{unique:true})
+attendanceSchema.index({user:1,date:1,subjectCode:1},{unique:true})
 
 const Attendance=mongoose.model("Attendance",attendanceSchema)
 

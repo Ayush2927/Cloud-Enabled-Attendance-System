@@ -23,8 +23,8 @@ app.use(cors({
 }));
 
 // 2. Body Parsers: These MUST come before your routes to fix the 'undefined email' error
-app.use(express.json({ limit: "16kb" })); // Parses incoming JSON requests
-app.use(express.urlencoded({ extended: true, limit: "16kb" })); // Parses URL-encoded data
+app.use(express.json({ limit: "10mb" })); // Parses incoming JSON requests
+app.use(express.urlencoded({ extended: true, limit: "10mb" })); // Parses URL-encoded data
 
 // 3. Cookie Parser: Required for reading JWTs from cookies
 app.use(cookieParser());

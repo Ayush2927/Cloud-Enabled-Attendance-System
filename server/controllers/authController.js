@@ -26,11 +26,11 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 
-const registerUser = asyncHandler(async (req, res, next) => {
-    const { email, name, role, password } = req.body;
+const registerUser = asyncHandler(async (req, res) => {
+    const { email, name, role, password,subjects,faceImage } = req.body;
 
-    if (!email || !password || !name) {
-        throw new ApiError(400, "All fields are required");
+    if (!email || !password || !name || !faceImage) {
+        throw new ApiError(400, "All fields, including face image are required");
     }
 
     const existingUser = await User.findOne({ email });
@@ -43,7 +43,10 @@ const registerUser = asyncHandler(async (req, res, next) => {
         name,
         email,
         password,
-        role
+        role,
+        faceData:faceImage,
+        isFaceRegistered:true,
+        subjects:(role==="Teacher" || role==="Admin") ? subjects:[]
     });
 
     const createdUser = await User.findById(user._id).select("-password -refreshToken");
@@ -54,11 +57,11 @@ const registerUser = asyncHandler(async (req, res, next) => {
 });
 
 
-const loginUser = asyncHandler(async (req, res, next) => {
-    const { email, password } = req.body;
+const loginUser = asyncHandler(async (req, res) => {
+    const { email, password, liveFaceImage} = req.body;
 
-    if (!email || !password) {
-        throw new ApiError(400, "Email and password are required");
+    if (!email || !password || !liveFaceImage) {
+        throw new ApiError(400, "Email, password and face image is required for successful login");
     }
 
     const user = await User.findOne({ email });
@@ -72,6 +75,18 @@ const loginUser = asyncHandler(async (req, res, next) => {
     if (!isPasswordValid) {
         throw new ApiError(401, "Invalid password");
     }
+
+    if(!user.faceData){
+        throw new ApiError(400,"User has no registered Face ID")
+    }
+
+    const isFaceValid=liveFaceImage.length>1000;
+
+    if(!isFaceValid){
+        throw new ApiError(401,"Biometric Verification failed")
+    }
+
+    
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
@@ -92,7 +107,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
 });
 
 
-const logoutUser = asyncHandler(async (req, res, next) => {
+const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         { $set: { refreshToken: null } },
@@ -112,7 +127,7 @@ const logoutUser = asyncHandler(async (req, res, next) => {
 });
 
 
-const refreshAccessToken = asyncHandler(async (req, res, next) => {
+const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
     if (!incomingRefreshToken) {

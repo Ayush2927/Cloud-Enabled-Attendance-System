@@ -13,16 +13,18 @@ const UserSchema = new mongoose.Schema(
         enum: ["Teacher", "Student", "Admin"], 
         default: "Student" 
     },
-    pcMac:{
-        type:String,
-       default:null 
-    },
-    mobileMac:{
+    faceData:{
         type:String,
         default:null
     },
+
+    isFaceRegistered:{
+        type:Boolean,
+        default:false
+    },
     subjects:{
-        type:String,
+        type:[String],
+        default:[]
         
     }
 }, { timestamps: true });
