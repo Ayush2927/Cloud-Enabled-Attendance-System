@@ -19,12 +19,14 @@ const app = express();
 // 1. CORS: Allow cross-origin requests (essential for frontend-backend communication)
 app.use(cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:3000", 
-    credentials: true
+    credentials: true,
+    methods:["GET","PUT","POST","PATCH","DELETE","OPTIONS"],
+    allowedHeaders:["Content-Type","Authorization","X-Requested-With","Accept"]
 }));
 
 // 2. Body Parsers: These MUST come before your routes to fix the 'undefined email' error
-app.use(express.json({ limit: "10mb" })); // Parses incoming JSON requests
-app.use(express.urlencoded({ extended: true, limit: "10mb" })); // Parses URL-encoded data
+app.use(express.json({ limit: "16mb" })); // Parses incoming JSON requests
+app.use(express.urlencoded({ extended: true, limit: "16mb" })); // Parses URL-encoded data
 
 // 3. Cookie Parser: Required for reading JWTs from cookies
 app.use(cookieParser());

@@ -77,7 +77,8 @@ import { formatToIST } from "../utils/timeUtils.js";
        user:studentId,
        date:today,
        subjectCode, 
-       status:"Present"
+       status:"Present",
+       capturedFace:liveFaceImage
     });
 
     const recordWithIST = {
@@ -138,6 +139,7 @@ const logTeacherShift=asyncHandler(async(req,res,next)=>{
 
     //update existing record with checkout time
     record.checkOut=new Date();
+    record.status="Session_Ended"
     await record.save();
 
     const recordWithIST = {
@@ -185,7 +187,8 @@ const logTeacherShift=asyncHandler(async(req,res,next)=>{
             dateIST: formatToIST(log.createdAt),
             checkInIST: log.checkIn ? formatToIST(log.checkIn) : "N/A",
             checkOutIST: log.checkOut ? formatToIST(log.checkOut) : 
-                         (log.status === "Session_Started" ? "Active Session" : "N/A")
+                         (log.status === "Session_Started" ? "Active Session" : "N/A"),
+            hasFaceProof:!!log.capturedFace
         };
     });
 
@@ -196,4 +199,16 @@ const logTeacherShift=asyncHandler(async(req,res,next)=>{
 });
 
 
-export {markStudentAttendance,logTeacherShift,getAdminReports};
+const getStoredFace= asyncHandler(async(req,res)=>{
+    const user=await User.findById(req.user._id).select("faceData");
+
+    if(!user || !user.faceData){
+        throw new ApiError(404,"Biometric reference not found. Please register your face first")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200,{faceData:user.faceData},"Reference face fetched successfully")
+    )
+})
+
+export {markStudentAttendance,logTeacherShift,getAdminReports,getStoredFace};

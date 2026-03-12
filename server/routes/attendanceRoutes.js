@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { markStudentAttendance,logTeacherShift,getAdminReports } from "../controllers/attendanceController.js";
+import { markStudentAttendance,logTeacherShift,getAdminReports,getStoredFace } from "../controllers/attendanceController.js";
 import { verifyJwt } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
 
@@ -24,6 +24,12 @@ router.route("/admin/all-logs").get(
     authorizeRoles("Admin"),
     getAdminReports
 
+)
+
+router.route("/get-face").get(
+    verifyJwt,
+    authorizeRoles("Student"),
+    getStoredFace
 )
 
 export default router;
