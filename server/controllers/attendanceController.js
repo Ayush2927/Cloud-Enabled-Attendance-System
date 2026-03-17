@@ -99,7 +99,7 @@ const logTeacherShift=asyncHandler(async(req,res,next)=>{
     const {subjectCode}=req.body;
     const teacherId=req.user._id;
  
-    const user=User.findById(teacherId);
+    const user= await User.findById(teacherId);
 
     if(!subjectCode){
         throw new ApiError(400,"SubjectCode is required to start the session");
