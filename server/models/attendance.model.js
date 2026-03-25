@@ -7,6 +7,18 @@ const attendanceSchema=new Schema({
     required:true
    },
 
+   lecture:{
+      type:Schema.Types.ObjectId,
+      ref:"Lecture",
+      required:true
+   },
+
+   subject:{
+      type:Schema.Types.ObjectId,
+      ref:"Subjects",
+      required:true
+   },
+
    date:{
     type:String,
     required:true
@@ -28,10 +40,7 @@ const attendanceSchema=new Schema({
     default:"Present"
    },
 
-   subjectCode:{
-      type:String,
-      required:true
-   },
+   
 
    capturedFace:{
       type:String,
@@ -43,7 +52,9 @@ const attendanceSchema=new Schema({
    
 },  {timestamps:true});
 
-attendanceSchema.index({user:1,date:1,subjectCode:1})
+attendanceSchema.index({user:1,lecture:1,unique:1})
+
+attendanceSchema.index({lecture:1,status:1})
 
 const Attendance=mongoose.model("Attendance",attendanceSchema)
 

@@ -23,8 +23,10 @@ const UserSchema = new mongoose.Schema(
         default:false
     },
     subjects:{
-        type:[String],
-        default:[]
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Subjects"
+
+
         
     }
 }, { timestamps: true });
