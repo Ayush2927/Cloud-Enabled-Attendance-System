@@ -1,5 +1,6 @@
 import { Attendance } from "../models/attendance.model.js";
 import Jwt from "jsonwebtoken";
+import { Lecture } from "../models/lecture.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -29,127 +30,173 @@ import { formatToIST } from "../utils/timeUtils.js";
     .json(new ApiResponse(201,record,"Student attendance marked successfully"))
 }) */
 
-    const markStudentAttendance=asyncHandler(async(req,res,next)=>{
-    console.log(" markStudentAttendance called");
+    const markStudentAttendance=asyncHandler(async(req,res,)=>{
+        const {lectureId,liveFaceImage}=req.body;
+        const studentId=req.user_id;
+
+        if(!lectureId || !liveFaceImage){
+            throw new ApiError(400, "lectureId and liveFaceImage are required")
+        }
+
+        if(liveFaceImage.length<1000){
+            throw new ApiError(401,"Biometric face detection failed, no clear face detected")
+        }
+
+        const lecture=await Lecture.findById(lectureId);
+         if(!lecture){
+            throw new ApiError(404,"Lecture not found")
+         }
+
+         if(lecture.sessionStatus!=="Active"){
+            throw new ApiError(400,"No active session found for this lecture")
+         }
+
+         //15 minutes window check for attendance
+
+         const sessionAge=Date.now()-new Date(lecture.sessionStartedAt).getTime();
+
+         const Fifteen_Minutes=15*60*1000;
+         if(sessionAge>Fifteen_Minutes){
+            throw new ApiError(400,"Attendance window has been closed, session started more than 15 minutes ago")
+         }
+
+         //Duplicate check
+         const existingRecord=await Attendance.findOne({
+            user:studentId,
+            lecture:lectureId
+         })
+
+         if(existingRecord){
+            throw new ApiError(400,"You have already marked attendance for this lecture")
+         }
+         
+         //all checks passed, create the present record
+         const record=await Attendance.create({
+            user:studentId,
+            subject:lecture.subject,
+            lecture:lectureId,
+            date:new Date().toISOString().split("T")[0],
+            status:"Present",
+            capturedFace:liveFaceImage
+         })
+
+         return res.status(201).json(
+            new ApiResponse(201,{
+                ...record._doc,
+                markedAtIst:formatToIST(record.createdAt)
+            },"Attendance marked successfully")
+         )
     
-    const {subjectCode,liveFaceImage}=req.body
-    const studentId=req.user._id;
-    console.log(" Student ID:", studentId);
-
-    if(!subjectCode || !liveFaceImage){
-        throw new ApiError(400, "SubjectCode and Face Capture are required")
-    }
-    
-    const isFaceValid=liveFaceImage.length>1000;
-
-    if(!isFaceValid){
-        throw new ApiError(401,"Biometric verification failed, No clear face detected")
-    }
-    const activeSession =await Attendance.findOne({
-        subjectCode,
-        status:"Session_Started",
-        checkOut:null,
-        createdAt:{$gte:new Date(Date.now()-15*60000)}
-    })
-
-    if(!activeSession){
-        throw new ApiError(400,"Currently no active session found for this subject")
-    }
-
-    const today=new Date().toISOString().split('T')[0];
-    console.log(" Today's date:", today);
-
-    const existingRecord=await Attendance.findOne({
-        user:studentId,
-        date:today,
-        subjectCode,
-        status:"Present"
-    })
-    console.log(" Existing record found:", existingRecord ? "Yes" : "No");
-
-    if(existingRecord){
-        throw new ApiError(400,"Attendance already recorded for this lecture");
-    }
-
-    console.log(" Creating new attendance record");
-    
-    const record=await Attendance.create({
-       user:studentId,
-       date:today,
-       subjectCode, 
-       status:"Present",
-       capturedFace:liveFaceImage
-    });
-
-    const recordWithIST = {
-        ...record._doc,
-        markedAtIST: formatToIST(record.createdAt)
-    };
-    
-    console.log(" Record created:", record);
-
-    return res.status(201)
-    .json(new ApiResponse(201,recordWithIST,"Student attendance marked successfully"))
 })
 
 
-//teacher logic-log shift and open session
+//start or end a session
 
 const logTeacherShift=asyncHandler(async(req,res,next)=>{
-    const {subjectCode}=req.body;
-    const teacherId=req.user._id;
- 
-    const user= await User.findById(teacherId);
+    const {lectureId}=req.body;
 
-    if(!subjectCode){
-        throw new ApiError(400,"SubjectCode is required to start the session");
-    };
+    const teacherId=req.user_id;
 
-    
+    if(!teacherId){
+        throw new ApiError(400,"lecture ID is required")
+    }
 
-    const today=new Date().toISOString().split('T')[0];
+    const lecture=await Lecture.findById(lectureId);
+    if(!lecture){
+        throw new ApiError(404,"Lecture not found")
+    }
 
-    let record=await Attendance.findOne({
-        user:teacherId,
-        date:today,
-        subjectCode
-    }) 
+    if(lecture.teacher.toString()!==teacherId.toString()){
+        throw new ApiError(403,"You are not assigned to this lecture")
+    }
 
-    if(!record){
-        record=await Attendance.create({
+    const today=new Date().toISOString().split("T")[0];
+
+    //create a lecture
+    if(lecture.sessionStatus==="Scheduled"){
+        lecture.sessionStatus="Active";
+
+        lecture.sessionStartedAt=new Date();
+
+        await lecture.save();   
+
+        const record=await Attendance.create({
             user:teacherId,
+            subject:lecture.subject,
+            lecture:lectureId,
             date:today,
-            subjectCode,
             checkIn:new Date(),
             status:"Session_Started"
+
         })
 
-        const recordWithIST = {
-            ...record._doc,
-            checkInIST: formatToIST(record.checkIn)
-        };
+        return res.status(201).json(
+            new ApiResponse(201,{
+                lecture,
+                record:{
+                    ...record._doc,
+                    checkInIST:formatToIST(record.checkIn)
+                }
+            },"Session Started Successfully")
+        )
+    }
+
+    //Close session
+    if(lecture.sessionStatus==="Active"){
+           lecture.sessionStatus="Ended";
+           lecture.sessionEndedAt=new Date();
+           await lecture.save();
+
+    const teacherRecord=await Attendance.findOneAndUpdate(
+        {user:teacherId, lecture:lectureId},
+        {checkOut:new Date(),status:"Session_Ended"},
+        {new:true}
+    )
+
+    const presentStudentIds=await Attendance.find({
+        lecture:lectureId,
+        status:"Present"
+    }).distinct("user");
+
+    const enrolledStudents=await User.find({
+        role:"Student",
+        subjects:lecture.subject
+    }).select("_id");
+
+    const absentStudents=enrolledStudents.filter(student=>
+        !presentStudentIds
+        .map(id=>id.toString())
+        .includes(student._id.toString())
+    )
+
+    if(absentStudents.length>0){
+        const absentRecords=absentStudents.map(student=>({
+            user:student._id,
+            lecture:lectureId,
+            subject:lecture.subject,
+            date:today,
+            status:"Absent"
+        }))
+
+        await Attendance.insertMany(absentRecords,{ordered:false})
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200,{
+            lecture,
+            record:teacherRecord?{
+                ...teacherRecord._doc,
+                checkInIST:formatToIST(teacherRecord.checkIn),
+                checkOut:formatToIST(teacherRecord.checkOut)}
+                :null,
+                absentMarked:absentStudents.length
+            },`Session Ended. ${absentStudents.length} students auto-marked absent`)
+        )
     
-        return res.status(201)
-        .json(new ApiResponse(201,recordWithIST,"Teacher Session Started Successfully"))
+
     }
-
-    if(record.checkOut){
-        throw new ApiError(400,"You have already ended the session")
-    }
-
-    //update existing record with checkout time
-    record.checkOut=new Date();
-    record.status="Session_Ended"
-    await record.save();
-
-    const recordWithIST = {
-        ...record._doc,
-        checkInIST: formatToIST(record.checkIn),
-        checkOutIST: formatToIST(record.checkOut)
-    };
-
-    return res.status(200)
-    .json(new ApiResponse(200,recordWithIST,"Teacher session ended successfully"))
+    //if session is ended neither of the above blocks ran
+    throw new ApiError(400,"This session has already ended")
 
 
     
@@ -170,45 +217,107 @@ const logTeacherShift=asyncHandler(async(req,res,next)=>{
 })
 */
 
+//Admin: get full attendance logs
  const getAdminReports = asyncHandler(async (req, res) => {
-    //  Fetch all records and 'populate' user info so we see Names, not just IDs
-    const allLogs = await Attendance.find()
-        .populate("user", "name role email")
-        .sort({ createdAt: -1 }); // Show the most recent activity first
+const allLogs=await Attendance.find()
+.populate("user","name role email")
+.populate("lecture","subjectCode subjectName lectureNumber date startTime division")
+.sort({createdAt:-1})
 
-    //  Transform the array to include IST strings for every entry
-    const logsWithIST = allLogs.map(log => {
-        // We extract the plain data from the Mongoose document
-        const logData = log._doc;
+const logsWithISt=allLogs.map(log=>({
+    ...log._doc,
+    dateIST:formatToIST(log.createdAt),
+    checkInIST:log.checkIn ? formatToIST(log.checkIn) : "N/A",
+    checkOutIST:log.checkOut
+    ? formatToIST(log.checkOut)
+    :log.status==="Session_Started"
+    ? "Active Session"
+    :"N/A",
+    hasFaceProof:!!log.capturedFace
+})
+
+)
+
+return res.status(200).json(
+    new ApiResponse(200,logsWithISt,"All attendance logs retrieved successfully")
+)
+})
+
+//Student: get own attendance percentage per subject
+const getMyAttendanceSats=asyncHandler(async(req,res)=>{
+const studentId=req.user._id;
+
+const presentRecords=await Attendance.find({
+    user:studentId,
+    status:"Present"
+}).select("subject lecture");
+
+const endedLectures=await Lecture.find({
+    sessionStatus:"Ended"
+}).populate("subject","code name")
+
+const totalBySubject=endedLectures.reduce((acc, lecture) => {
+        // lecture.subject._id.toString() is the key
+        const subjectId = lecture.subject._id.toString();
+
+        if (!acc[subjectId]) {
+            // first time seeing this subject — initialise it
+            acc[subjectId] = {
+                total: 0,
+                code: lecture.subject.code,
+                name: lecture.subject.name
+            };
+        }
+        // increment total lecture count for this subject
+        acc[subjectId].total += 1;
+        return acc; // return accumulator for next iteration
+    }, {}); // {} is the initial value of acc
+
+    const attendedBySubject = presentRecords.reduce((acc, record) => {
+        const subjectId = record.subject.toString();
+        // if key doesn't exist yet, start at 0, then add 1
+        acc[subjectId] = (acc[subjectId] || 0) + 1;
+        return acc;
+    }, {});
+
+    // Object.keys() — returns array of all keys in the object
+    // here gives us all subjectIds that have ended lectures
+    const stats = Object.keys(totalBySubject).map(subjectId => {
+        const total    = totalBySubject[subjectId].total;
+        const attended = attendedBySubject[subjectId] || 0; // default 0 if student never attended
+        // Math.round() — rounds to nearest integer, avoids 75.000000001 type values
+        const percentage = Math.round((attended / total) * 100);
 
         return {
-            ...logData,
-            // Add IST formatted strings for the Admin report
-            dateIST: formatToIST(log.createdAt),
-            checkInIST: log.checkIn ? formatToIST(log.checkIn) : "N/A",
-            checkOutIST: log.checkOut ? formatToIST(log.checkOut) : 
-                         (log.status === "Session_Started" ? "Active Session" : "N/A"),
-            hasFaceProof:!!log.capturedFace
+            subjectId,
+            subjectCode: totalBySubject[subjectId].code,
+            subjectName: totalBySubject[subjectId].name,
+            attended,
+            total,
+            percentage,
+            // ternary — safe if 75 or above, at-risk if below
+            status: percentage >= 75 ? "safe" : "at-risk"
         };
     });
 
-    //  Send the fully formatted list back to the Admin
     return res.status(200).json(
-        new ApiResponse(200, logsWithIST, "All attendance logs retrieved successfully in IST")
+        new ApiResponse(200, stats, "Attendance stats retrieved")
     );
-});
 
 
-const getStoredFace= asyncHandler(async(req,res)=>{
+})
+
+//frontend calls this before face comparison
+const getStoredFace=asyncHandler(async(req,res)=>{
     const user=await User.findById(req.user._id).select("faceData");
-
     if(!user || !user.faceData){
-        throw new ApiError(404,"Biometric reference not found. Please register your face first")
+        throw new ApiError(404,"Biometric reference not found.Please register yourself")
     }
 
     return res.status(200).json(
-        new ApiResponse(200,{faceData:user.faceData},"Reference face fetched successfully")
+        new ApiResponse(200,{faceData:user.faceData}, "Reference face fetched successfully")
     )
 })
+    
 
-export {markStudentAttendance,logTeacherShift,getAdminReports,getStoredFace};
+export {markStudentAttendance,logTeacherShift,getAdminReports,getStoredFace,getMyAttendanceSats};
