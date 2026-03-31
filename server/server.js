@@ -7,6 +7,8 @@ import cookieParser from "cookie-parser";
 // Route Imports
 import authRoutes from "./routes/authRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
+import lectureRoutes from "./routes/lectureRoutes.js";
+import subjectRoutes from "./routes/subjectRoutes.js"
 
 // Configuration
 dotenv.config();
@@ -40,7 +42,9 @@ app.get("/", (req, res) => {
 
 // Authentication Routes (Prefixed with /api/auth)
 app.use("/api/auth", authRoutes);
-app.use("/api/v1/attendance",attendanceRoutes)
+app.use("/api/v1/attendance",attendanceRoutes);
+app.use("api/v1/lectures", lectureRoutes);
+app.use("api/v1/subjects",subjectRoutes);
 
 // --- Error Handling ---
 
