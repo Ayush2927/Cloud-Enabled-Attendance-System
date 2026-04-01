@@ -7,6 +7,15 @@ const api = axios.create({
     withCredentials: true // Extremely important for sending cookies
 });
 
+// Interceptor to attach Bearer token to bypass strict Third-Party Cookie blocking in Chrome
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('attendEase_token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => Promise.reject(error));
+
 // Response interceptor to automatically handle 401s (expired access token)
 // by trying to refresh the token and retrying the request
 api.interceptors.response.use(
@@ -24,13 +33,26 @@ api.interceptors.response.use(
             originalRequest._retry = true;
 
             try {
-                // Assuming your auth endpoints are prefixed differently or accessible here
-                // Note: The server route is now /api/v1/auth/refresh
-                const refreshApi = axios.create({ baseURL: "/api/v1/auth", withCredentials: true });
-                await refreshApi.post('/refresh');
+                const rt = localStorage.getItem('attendEase_refresh_token');
+                if (!rt) throw new Error("No refresh token stored");
 
-                // If refresh succeeds, the new httpOnly cookie is automatically stored by the browser.
-                // We just retry the original failed request.
+                const refreshApi = axios.create({ 
+                    baseURL: import.meta.env.VITE_API_URL || "/api/v1", 
+                    withCredentials: true 
+                });
+                
+                const res = await refreshApi.post('/auth/refresh', { refreshToken: rt });
+
+                // Update new tokens in memory
+                const newAccessToken = res.data.data.accessToken;
+                const newRefreshToken = res.data.data.refreshToken;
+                localStorage.setItem('attendEase_token', newAccessToken);
+                localStorage.setItem('attendEase_refresh_token', newRefreshToken);
+
+                // Update original request header
+                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+                // Retry the original failed request
                 return api(originalRequest);
             } catch (refreshError) {
                 // Refresh failed (refresh token expired too) -> user is logged out
