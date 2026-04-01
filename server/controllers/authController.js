@@ -4,6 +4,11 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict"
+};
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
@@ -25,15 +30,14 @@ const generateAccessAndRefreshTokens = async (userId) => {
     }
 };
 
-
 const registerUser = asyncHandler(async (req, res) => {
-    const { email, name, role, password,subjects,faceImage } = req.body;
+    const { email, name, role, password, subjects, faceImage } = req.body;
 
     if (!email || !password || !name || !faceImage) {
         throw new ApiError(400, "All fields, including face image are required");
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: String(email) });
 
     if (existingUser) {
         throw new ApiError(409, "User already exists");
@@ -44,9 +48,9 @@ const registerUser = asyncHandler(async (req, res) => {
         email,
         password,
         role,
-        faceData:faceImage,
-        isFaceRegistered:true,
-        subjects:(role==="Teacher" || role==="Admin") ? subjects:[]
+        faceData: faceImage,
+        isFaceRegistered: true,
+        subjects: (role === "Teacher" || role === "Admin") ? subjects : []
     });
 
     const createdUser = await User.findById(user._id).select("-password -refreshToken");
@@ -56,15 +60,14 @@ const registerUser = asyncHandler(async (req, res) => {
     );
 });
 
-
 const loginUser = asyncHandler(async (req, res) => {
-    const { email, password, liveFaceImage} = req.body;
+    const { email, password, liveFaceImage } = req.body;
 
     if (!email || !password || !liveFaceImage) {
         throw new ApiError(400, "Email, password and face image is required for successful login");
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: String(email) });
 
     if (!user) {
         throw new ApiError(404, "User not found");
@@ -76,56 +79,41 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Invalid password");
     }
 
-    if(!user.faceData){
-        throw new ApiError(400,"User has no registered Face ID")
+    if (!user.faceData) {
+        throw new ApiError(400, "User has no registered Face ID");
     }
 
-    const isFaceValid=liveFaceImage.length>1000;
-
-    if(!isFaceValid){
-        throw new ApiError(401,"Biometric Verification failed")
+    // TODO: Replace with real server-side face comparison (e.g., AWS Rekognition, face-api.js on server)
+    // Current check is a placeholder — validates that a face image of reasonable size was sent
+    if (typeof liveFaceImage !== "string" || liveFaceImage.length < 1000) {
+        throw new ApiError(401, "Biometric verification failed — invalid face image");
     }
-
-    
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
-
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
-
-    const options = {
-        httpOnly: true,
-        secure: true
-    };
 
     return res
         .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
+        .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", refreshToken, cookieOptions)
         .json(
             new ApiResponse(200, { user: loggedInUser, accessToken, refreshToken }, "User logged in successfully")
         );
 });
 
-
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         { $set: { refreshToken: null } },
-        { returnDocument:'after'}
+        { returnDocument: "after" }
     );
-
-    const options = {
-        httpOnly: true,
-        secure: true
-    };
 
     return res
         .status(200)
-        .clearCookie("accessToken", options)
-        .clearCookie("refreshToken", options)
+        .clearCookie("accessToken", cookieOptions)
+        .clearCookie("refreshToken", cookieOptions)
         .json(new ApiResponse(200, {}, "User logged out"));
 });
-
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
@@ -150,13 +138,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new ApiError(401, "Refresh token expired or used");
         }
 
-        const options = { httpOnly: true, secure: true };
         const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshTokens(user._id);
 
         return res
             .status(200)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", newRefreshToken, options)
+            .cookie("accessToken", accessToken, cookieOptions)
+            .cookie("refreshToken", newRefreshToken, cookieOptions)
             .json(
                 new ApiResponse(200, { accessToken, refreshToken: newRefreshToken }, "Access token refreshed")
             );

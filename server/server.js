@@ -3,12 +3,15 @@ import { connectDB } from "./config/db.js";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import mongoSanitize from "express-mongo-sanitize";
 
 // Route Imports
 import authRoutes from "./routes/authRoutes.js";
 import attendanceRoutes from "./routes/attendanceRoutes.js";
 import lectureRoutes from "./routes/lectureRoutes.js";
-import subjectRoutes from "./routes/subjectRoutes.js"
+import subjectRoutes from "./routes/subjectRoutes.js";
 
 // Configuration
 dotenv.config();
@@ -16,66 +19,82 @@ connectDB();
 
 const app = express();
 
-// --- Middleware Stack ---
+// --- Security Middleware ---
 
-// 1. CORS: Allow cross-origin requests (essential for frontend-backend communication)
+// Helmet: sets security-related HTTP headers
+app.use(helmet());
+
+// Rate limiting: prevent brute force & DoS
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: "Too many requests, please try again later" }
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: "Too many login attempts, please try again later" }
+});
+
+app.use(generalLimiter);
+
+// CORS: restricted to frontend origin
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000", 
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
     credentials: true,
-    methods:["GET","PUT","POST","PATCH","DELETE","OPTIONS"],
-    allowedHeaders:["Content-Type","Authorization","X-Requested-With","Accept"]
+    methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
 }));
 
-// 2. Body Parsers: These MUST come before your routes to fix the 'undefined email' error
-app.use(express.json({ limit: "16mb" })); // Parses incoming JSON requests
-app.use(express.urlencoded({ extended: true, limit: "16mb" })); // Parses URL-encoded data
+// Body Parsers: reasonable limit to prevent abuse
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 
-// 3. Cookie Parser: Required for reading JWTs from cookies
+// NoSQL Injection Prevention
+app.use(mongoSanitize());
+
+// Cookie Parser
 app.use(cookieParser());
 
 // --- Routes ---
 
-// Health Check Route
+// Health Check
 app.get("/", (req, res) => {
     res.send("API is running");
 });
 
-// Authentication Routes (Prefixed with /api/auth)
-app.use("/api/auth", authRoutes);
-app.use("/api/v1/attendance",attendanceRoutes);
-app.use("api/v1/lectures", lectureRoutes);
-app.use("api/v1/subjects",subjectRoutes);
+// API Routes — stricter rate limit on auth endpoints
+app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/v1/attendance", attendanceRoutes);
+app.use("/api/v1/lectures", lectureRoutes);
+app.use("/api/v1/subjects", subjectRoutes);
 
-// --- Error Handling ---
-
-// Custom Error Handler Middleware
-// --- Error Handling ---
-
-// Custom Error Handler Middleware
 // --- Error Handling ---
 
 app.use((err, req, res, next) => {
-
-    console.error(" ERROR CAUGHT:");
-    console.error("Status:", err.statusCode || 500);
-    console.error("Message:", err.message);
-    console.error("Stack:", err.stack);
-    console.error("Full Error:", err);
     const statusCode = err.statusCode || 500;
     const message = err.message || "Internal server error";
+    const errors = err.errors || [];
 
-    // FIX: Safely check if 'errors' exists to avoid the "is not defined" crash
-    const errors = err.errors ? err.errors : [];
+    if (process.env.NODE_ENV !== "production") {
+        console.error(`[${statusCode}] ${message}`);
+    }
 
     res.status(statusCode).json({
         success: false,
-        message: message,
-        errors: errors 
+        message,
+        errors
     });
 });
+
 // --- Server Startup ---
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on PORT: ${PORT}`);
+    console.log(`Server running in ${process.env.NODE_ENV || "development"} mode on PORT: ${PORT}`);
 });
