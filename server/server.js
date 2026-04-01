@@ -43,10 +43,21 @@ const authLimiter = rateLimit({
 
 app.use(generalLimiter);
 
-// CORS: Dynamically allow the requesting origin (perfect for Vercel + Local dev simultaneously)
+// CORS: Strickly whitelisted origins for 100% reliable Chrome credential passing
+const allowedOrigins = [
+    "http://localhost:5173", 
+    "http://localhost:5174",
+    "https://cloud-enabled-attendance-system-pink.vercel.app",
+    process.env.CORS_ORIGIN
+].filter(Boolean);
+
 app.use(cors({
     origin: function(origin, callback) {
-        callback(null, origin || true);
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, origin);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
     },
     credentials: true,
     methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"],
