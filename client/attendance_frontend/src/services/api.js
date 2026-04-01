@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "/api/v1",
+    // Vercel will inject the true backend URL here via environment variables! 
+    // If running locally, it falls back to the Vite /api/v1 proxy string!
+    baseURL: import.meta.env.VITE_API_URL || "/api/v1",
     withCredentials: true // Extremely important for sending cookies
 });
 

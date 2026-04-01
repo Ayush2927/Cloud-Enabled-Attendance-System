@@ -6,8 +6,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict"
+    secure: true, // Required by all major browsers when sameSite is 'none'
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax" // "none" allows cross-domain cookies (Vercel <-> Render)
 };
 
 const generateAccessAndRefreshTokens = async (userId) => {

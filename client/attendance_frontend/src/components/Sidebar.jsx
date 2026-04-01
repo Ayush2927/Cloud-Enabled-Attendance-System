@@ -13,9 +13,7 @@ export default function Sidebar({ userRole }) {
       { path: '/student/stats', name: 'My Stats', icon: <FiPieChart /> },
     ],
     Teacher: [
-      { path: '/teacher', name: 'Dashboard', icon: <FiHome /> },
-      { path: '/teacher/session', name: 'Manage Session', icon: <FiClock /> },
-      { path: '/teacher/reports', name: 'Attendance Reports', icon: <FiBook /> },
+      { path: '/teacher', name: 'Dashboard & Sessions', icon: <FiClock /> },
     ],
     Admin: [
       { path: '/admin', name: 'Dashboard', icon: <FiHome /> },

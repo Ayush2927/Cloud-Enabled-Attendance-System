@@ -4,8 +4,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import StudentDashboard from './pages/student/StudentDashboard';
+import MyStats from './pages/student/MyStats';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import ManageSubjects from './pages/admin/ManageSubjects';
+import ManageLectures from './pages/admin/ManageLectures';
+import SystemLogs from './pages/admin/SystemLogs';
+
 import AttendancePage from './pages/AttendancePage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -29,6 +34,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['Student']} />}>
             <Route path="/student" element={<StudentDashboard />} />
             <Route path="/student/mark-attendance/:lectureId?" element={<AttendancePage />} />
+            <Route path="/student/stats" element={<MyStats />} />
           </Route>
 
           {/* Teacher Routes */}
@@ -39,6 +45,9 @@ function App() {
           {/* Admin Routes */}
           <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/subjects" element={<ManageSubjects />} />
+            <Route path="/admin/lectures" element={<ManageLectures />} />
+            <Route path="/admin/logs" element={<SystemLogs />} />
           </Route>
 
         </Route>
