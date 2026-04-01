@@ -18,8 +18,8 @@ api.interceptors.response.use(
 
             try {
                 // Assuming your auth endpoints are prefixed differently or accessible here
-                // Note: The server route is /api/auth/refresh (not /api/v1/...)
-                const refreshApi = axios.create({ baseURL: "/api/auth", withCredentials: true });
+                // Note: The server route is now /api/v1/auth/refresh
+                const refreshApi = axios.create({ baseURL: "/api/v1/auth", withCredentials: true });
                 await refreshApi.post('/refresh');
 
                 // If refresh succeeds, the new httpOnly cookie is automatically stored by the browser.

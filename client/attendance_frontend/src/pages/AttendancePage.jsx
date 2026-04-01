@@ -1,141 +1,161 @@
-import React, { useEffect, useRef, useState } from "react";
-import { loadModels, getFaceMatch } from "../services/faceService";
-import api from "../services/api";
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import * as faceapi from 'face-api.js';
+import api from '../services/api';
+import toast from 'react-hot-toast';
+import WebcamCapture from '../components/WebcamCapture';
 
-const AttendancePage = () => {
-    const videoRef = useRef();
-    const [status, setStatus] = useState("Initializing AI...");
+// Utility to load AI Models
+const loadModels = async () => {
+    try {
+        const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+        await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+        ]);
+        return true;
+    } catch (e) {
+        console.error("AI Model Load Error:", e);
+        return false;
+    }
+};
+
+export default function AttendancePage() {
+    const { lectureId } = useParams();
+    const navigate = useNavigate();
+    const [status, setStatus] = useState('Initializing AI...');
     const [isModelsLoaded, setIsModelsLoaded] = useState(false);
-    const [lectureId, setLectureId] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Load models and start camera
     useEffect(() => {
-        let stream = null;
-
-        const setup = async () => {
-            try {
-                await loadModels();
-                setIsModelsLoaded(true);
-
-                stream = await navigator.mediaDevices.getUserMedia({ video: {} });
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-                setStatus("Ready for scanning. Please look at the camera.");
-            } catch (err) {
-                setStatus("Error setting up camera/AI: " + err.message);
-            }
-        };
-
-        setup();
-
-        // Cleanup: stop camera tracks on unmount
-        return () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-        };
-    }, []);
-
-    // Capture a frame from the video as base64
-    const captureFrame = () => {
-        const video = videoRef.current;
-        if (!video) return null;
-
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext("2d").drawImage(video, 0, 0);
-        return canvas.toDataURL("image/jpeg", 0.8);
-    };
-
-    // Verify face and mark attendance
-    const handleVerify = async () => {
-        if (!isModelsLoaded) return;
-        if (!lectureId.trim()) {
-            setStatus("Please enter a Lecture ID first.");
+        if (!lectureId) {
+            toast.error('Invalid lecture session selected.');
+            navigate('/student');
             return;
         }
 
-        setStatus("Fetching your reference photo...");
+        const init = async () => {
+            const loaded = await loadModels();
+            setIsModelsLoaded(loaded);
+            setStatus(loaded ? 'Ready for biometric scan' : 'Failed to load AI models');
+        };
+        init();
+    }, [lectureId, navigate]);
+
+    // Perform actual face matching
+    const performFaceMatch = async (referenceBase64, liveBase64) => {
         try {
-            const response = await api.get("/attendance/get-face");
-            const storedFace = response.data.data.faceData;
+            // Helper function to convert base64 to HTMLImageElement
+            const createImage = (b64) => {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = b64;
+                });
+            };
 
-            setStatus("Comparing faces... Stay still.");
-            const match = await getFaceMatch(storedFace, videoRef.current);
+            const refImage = await createImage(referenceBase64);
+            const liveImage = await createImage(liveBase64);
 
-            if (match && match.distance < 0.5) {
-                setStatus("✅ Match Found! Recording attendance...");
-                await markAttendanceOnServer();
-            } else {
-                setStatus("❌ Face Match Failed. Try again.");
-            }
-        } catch (err) {
-            setStatus("Error: " + (err.response?.data?.message || err.message || "Not Logged In"));
+            // Need tinyFaceDetector options
+            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 });
+
+            // Compute descriptors
+            const refResults = await faceapi.detectSingleFace(refImage, options)
+                                         .withFaceLandmarks()
+                                         .withFaceDescriptor();
+                                         
+            const liveResults = await faceapi.detectSingleFace(liveImage, options)
+                                          .withFaceLandmarks()
+                                          .withFaceDescriptor();
+
+            if (!refResults) throw new Error("Could not detect any face in your registered profile image.");
+            if (!liveResults) throw new Error("Could not detect your face in the webcam snapshot. Ensure good lighting.");
+
+            // Calculate distance (lower is better, threshold typically 0.5 or 0.6)
+            const distance = faceapi.euclideanDistance(refResults.descriptor, liveResults.descriptor);
+            console.log("Face Match distance:", distance);
+            
+            return distance < 0.55; 
+        } catch (error) {
+            throw error;
         }
     };
 
-    // Submit attendance to backend
-    const markAttendanceOnServer = async () => {
-        try {
-            const liveFaceImage = captureFrame();
-            if (!liveFaceImage) {
-                setStatus("Failed to capture face frame.");
-                return;
-            }
+    const handleCapture = async (liveFaceImage) => {
+        if (!isModelsLoaded) {
+            toast.error('AI models are still loading...');
+            return;
+        }
 
-            await api.post("/attendance/student/mark", {
-                lectureId: lectureId.trim(),
-                liveFaceImage
-            });
-            setStatus("✅ Attendance Marked Successfully!");
+        setIsLoading(true);
+        setStatus('Fetching your reference identity...');
+
+        try {
+            // 1. Fetch user's registered face (reference)
+            const response = await api.get('/attendance/get-face');
+            const storedFace = response.data.data.faceData;
+
+            setStatus('Comparing faces... Stay still.');
+            
+            // 2. Run Face-API match natively in browser
+            const isMatch = await performFaceMatch(storedFace, liveFaceImage);
+
+            if (isMatch) {
+                setStatus('✅ Match Found! Securing attendance record...');
+                
+                // 3. Inform server (Server performs window/duplicate checks)
+                await api.post('/attendance/student/mark', {
+                    lectureId,
+                    liveFaceImage
+                });
+
+                toast.success('Successfully marked present!');
+                navigate('/student/stats');
+            } else {
+                setStatus('❌ Verification failed: Faces do not match.');
+                toast.error('Biometric verification failed.');
+            }
         } catch (err) {
-            setStatus("Submission Failed: " + (err.response?.data?.message || err.message));
+            const message = err.message || err.response?.data?.message || 'Verification Error';
+            setStatus(`❌ Error: ${message}`);
+            toast.error(message);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div style={{ textAlign: "center", marginTop: "50px" }}>
-            <h1>Biometric Attendance</h1>
-            <div style={{ margin: "20px", padding: "10px", background: "#f0f0f0", borderRadius: "8px" }}>
-                <strong>Status:</strong> {status}
+        <div className="page animate-fade-in">
+            <div className="page-header" style={{ textAlign: 'center' }}>
+                <h1 className="page-title">Biometric Verification</h1>
+                <p className="page-subtitle">Verify your identity to lock in your attendance.</p>
             </div>
 
-            <div style={{ margin: "10px" }}>
-                <input
-                    type="text"
-                    placeholder="Enter Lecture ID"
-                    value={lectureId}
-                    onChange={(e) => setLectureId(e.target.value)}
-                    style={{ padding: "8px 16px", fontSize: "16px", borderRadius: "6px", border: "1px solid #ccc" }}
-                />
+            <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                <div className="card-glass" style={{ marginBottom: 'var(--space-6)', textAlign: 'center' }}>
+                    <div style={{ padding: 'var(--space-3)', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-6)' }}>
+                        <strong>System Status:</strong> <span style={{ color: isModelsLoaded ? 'var(--success)' : 'var(--warning)' }}>{status}</span>
+                    </div>
+
+                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                        <WebcamCapture onCapture={handleCapture} isLoading={isLoading || !isModelsLoaded} />
+                    </div>
+
+                    <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }}>
+                        Look directly into the camera. Ensure you are well-lit and not wearing heavy accessories.
+                    </p>
+                </div>
+
+                <div style={{ textAlign: 'center' }}>
+                    <button className="btn btn-ghost" onClick={() => navigate('/student')} disabled={isLoading}>
+                        Cancel & Return
+                    </button>
+                </div>
             </div>
-
-            <video
-                ref={videoRef}
-                autoPlay
-                muted
-                playsInline
-                style={{ width: "400px", border: "5px solid #333", borderRadius: "10px" }}
-            />
-
-            <br />
-            <button
-                onClick={handleVerify}
-                disabled={!isModelsLoaded}
-                style={{
-                    marginTop: "20px",
-                    padding: "10px 30px",
-                    fontSize: "18px",
-                    cursor: isModelsLoaded ? "pointer" : "not-allowed",
-                    opacity: isModelsLoaded ? 1 : 0.5
-                }}
-            >
-                Verify &amp; Mark Present
-            </button>
         </div>
     );
-};
-
-export default AttendancePage;
+}
