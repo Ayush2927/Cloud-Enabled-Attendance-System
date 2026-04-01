@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import WebcamCapture from '../../components/WebcamCapture';
+import * as faceapi from 'face-api.js';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -21,12 +22,27 @@ export default function RegisterPage() {
     }
 
     setIsLoading(true);
-    const payload = {
-      ...formData,
-      faceImage: base64Image
-    };
-
+    
     try {
+      // 1. Instantly load AI model to verify a face even exists in the frame
+      const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      
+      const img = new Image();
+      img.src = base64Image;
+      await new Promise(resolve => img.onload = resolve);
+      
+      const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions());
+      if (!detections) {
+        throw new Error("No face detected! Please ensure your face is clearly visible.");
+      }
+
+      // 2. Face found! Create payload
+      const payload = {
+        ...formData,
+        faceImage: base64Image
+      };
+
       await api.post('/auth/register', payload);
       toast.success('Registration successful! You can now login.');
       navigate('/login');

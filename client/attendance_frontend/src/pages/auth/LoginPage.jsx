@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import WebcamCapture from '../../components/WebcamCapture';
+import * as faceapi from 'face-api.js';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -18,6 +19,20 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
+      // 1. Instantly load AI model to verify a face even exists in the frame
+      const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      
+      const img = new Image();
+      img.src = base64Image;
+      await new Promise(resolve => img.onload = resolve);
+      
+      const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions());
+      if (!detections) {
+        throw new Error("No face detected in the webcam frame. Please look at the camera.");
+      }
+
+      // 2. Face found! Proceed to server authentication
       const user = await login(email, password, base64Image);
       // Let ProtectedRoute handle specific redirects, or navigate directly
       if (user.role === 'Student') navigate('/student');
