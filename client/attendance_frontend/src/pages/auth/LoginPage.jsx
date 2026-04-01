@@ -1,1 +1,82 @@
-export default function LoginPage() { return <div className="page"><h1>Login</h1></div>; }
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import WebcamCapture from '../../components/WebcamCapture';
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleCapture = async (base64Image) => {
+    if (!email || !password) {
+      alert("Please enter email and password first.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const user = await login(email, password, base64Image);
+      // Let ProtectedRoute handle specific redirects, or navigate directly
+      if (user.role === 'Student') navigate('/student');
+      else if (user.role === 'Teacher') navigate('/teacher');
+      else if (user.role === 'Admin') navigate('/admin');
+    } catch (error) {
+      // toast is handled in AuthContext
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="card-glass auth-card">
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
+          <h1 className="auth-logo">AttendEase</h1>
+          <h2 className="auth-title">Welcome back</h2>
+          <p className="auth-subtitle">Login with your credentials and biometric verification</p>
+        </div>
+
+        <form className="auth-form" onSubmit={e => e.preventDefault()}>
+          <div className="form-group">
+            <label className="form-label">Email Address</label>
+            <input 
+              type="email" 
+              className="form-input" 
+              placeholder="you@college.edu" 
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <input 
+              type="password" 
+              className="form-input" 
+              placeholder="••••••••" 
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              disabled={isLoading}
+            />
+          </div>
+
+          <div style={{ marginTop: 'var(--space-4)' }}>
+            <label className="form-label" style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Biometric Verification</label>
+            <WebcamCapture onCapture={handleCapture} isLoading={isLoading} />
+            <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', textAlign: 'center', marginTop: 'var(--space-2)' }}>
+              A live face scan is required to authenticate.
+            </p>
+          </div>
+        </form>
+
+        <div className="auth-footer">
+          Don't have an account? <Link to="/register">Request Registration</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
