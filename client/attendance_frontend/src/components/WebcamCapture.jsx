@@ -41,6 +41,13 @@ export default function WebcamCapture({ onCapture, isLoading }) {
     };
   }, [stopCamera]);
 
+  // Attach stream to video element when it mounts
+  useEffect(() => {
+    if (cameraActive && videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [cameraActive, stream]);
+
   // Capture current frame and send as base64 string
   const captureFrame = () => {
     if (!videoRef.current) return;
