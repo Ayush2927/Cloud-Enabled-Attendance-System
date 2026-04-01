@@ -12,8 +12,13 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // If error is 401 Unauthorized and we haven't already retried
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // If error is 401 Unauthorized and we haven't already retried, 
+        // AND the original request wasn't the login route itself!
+        if (
+            error.response?.status === 401 && 
+            !originalRequest._retry && 
+            !originalRequest.url.includes('/auth/login')
+        ) {
             originalRequest._retry = true;
 
             try {
