@@ -9,6 +9,9 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AttendancePage from './pages/AttendancePage';
 import NotFoundPage from './pages/NotFoundPage';
 
+import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
+
 // Main App Component
 function App() {
   return (
@@ -19,13 +22,26 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Dashboard Routes (will be protected later) */}
-        <Route path="/student/*" element={<StudentDashboard />} />
-        <Route path="/student/mark-attendance/:lectureId?" element={<AttendancePage />} />
-        
-        <Route path="/teacher/*" element={<TeacherDashboard />} />
-        
-        <Route path="/admin/*" element={<AdminDashboard />} />
+        {/* Protected Dashboard Routes wrapped in Layout */}
+        <Route element={<Layout />}>
+          
+          {/* Student Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['Student']} />}>
+            <Route path="/student" element={<StudentDashboard />} />
+            <Route path="/student/mark-attendance/:lectureId?" element={<AttendancePage />} />
+          </Route>
+
+          {/* Teacher Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['Teacher']} />}>
+            <Route path="/teacher" element={<TeacherDashboard />} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Route>
+
+        </Route>
 
         {/* Fallback */}
         <Route path="*" element={<NotFoundPage />} />
