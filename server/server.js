@@ -43,9 +43,11 @@ const authLimiter = rateLimit({
 
 app.use(generalLimiter);
 
-// CORS: restricted to frontend origin
+// CORS: Dynamically allow the requesting origin (perfect for Vercel + Local dev simultaneously)
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    origin: function(origin, callback) {
+        callback(null, origin || true);
+    },
     credentials: true,
     methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
