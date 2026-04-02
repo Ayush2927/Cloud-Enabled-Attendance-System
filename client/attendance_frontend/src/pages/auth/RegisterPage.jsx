@@ -25,7 +25,7 @@ export default function RegisterPage() {
     
     try {
       // 1. Instantly load AI model to verify a face even exists in the frame
-      const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+      const MODEL_URL = '/models';
       await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
       
       const img = new Image();

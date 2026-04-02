@@ -10,7 +10,7 @@ import FeatureHub from '../components/ui/FeatureHub';
 // Utility to load AI Models
 const loadModels = async () => {
     try {
-        const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+        const MODEL_URL = '/models';
         await Promise.all([
             faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
             faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
@@ -84,11 +84,11 @@ export default function AttendancePage() {
             if (!refResults) throw new Error("Could not detect any face in your registered profile image.");
             if (!liveResults) throw new Error("Could not detect your face in the webcam snapshot. Ensure good lighting.");
 
-            // Calculate distance (lower is better, threshold typically 0.5 or 0.6)
+            // Calculate distance (lower is better, threshold typically around 0.6)
             const distance = faceapi.euclideanDistance(refResults.descriptor, liveResults.descriptor);
             console.log("Face Match distance:", distance);
             
-            return distance < 0.55; 
+            return distance < 0.6;
         } catch (error) {
             throw error;
         }

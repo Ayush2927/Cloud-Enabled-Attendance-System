@@ -4,6 +4,10 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+const isLikelyBase64Image = (value) => {
+    return typeof value === "string" && value.startsWith("data:image/") && value.includes(";base64,");
+};
+
 const cookieOptions = {
     httpOnly: true,
     secure: true, // Required by all major browsers when sameSite is 'none'
@@ -84,8 +88,8 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // TODO: Replace with real server-side face comparison (e.g., AWS Rekognition, face-api.js on server)
-    // Current check is a placeholder — validates that a face image of reasonable size was sent
-    if (typeof liveFaceImage !== "string" || liveFaceImage.length < 1000) {
+    // Current check is a placeholder — validates that a base64 image payload was sent
+    if (!isLikelyBase64Image(liveFaceImage)) {
         throw new ApiError(401, "Biometric verification failed — invalid face image");
     }
 

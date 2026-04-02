@@ -6,6 +6,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
 import { formatToIST, getTodayDateString } from "../utils/timeUtils.js";
 
+const isLikelyBase64Image = (value) => {
+    return typeof value === "string" && value.startsWith("data:image/") && value.includes(";base64,");
+};
+
 const markStudentAttendance = asyncHandler(async (req, res) => {
     const { lectureId, liveFaceImage } = req.body;
     const studentId = req.user._id;
@@ -15,7 +19,8 @@ const markStudentAttendance = asyncHandler(async (req, res) => {
     }
 
     // TODO: Replace with real server-side face comparison
-    if (typeof liveFaceImage !== "string" || liveFaceImage.length < 1000) {
+    // For now, validate that the client sent a proper base64 image payload.
+    if (!isLikelyBase64Image(liveFaceImage)) {
         throw new ApiError(401, "Biometric face detection failed, no clear face detected");
     }
 
