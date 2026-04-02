@@ -1,11 +1,10 @@
 import { NavLink } from 'react-router-dom';
 import { 
   FiHome, FiCheckSquare, FiPieChart, 
-  FiBook, FiUsers, FiClock, FiSettings 
+  FiBook, FiUsers, FiClock, FiSettings, FiX 
 } from 'react-icons/fi';
 
-export default function Sidebar({ userRole }) {
-  // Navigation Links specific to roles
+export default function Sidebar({ userRole, isOpen, onClose }) {
   const navLinks = {
     Student: [
       { path: '/student', name: 'Dashboard', icon: <FiHome /> },
@@ -26,17 +25,16 @@ export default function Sidebar({ userRole }) {
   const currentLinks = navLinks[userRole] || [];
 
   return (
-    <aside style={{
-      width: 'var(--sidebar-width)',
-      background: 'var(--bg-secondary)',
-      borderRight: '1px solid var(--border-color)',
-      padding: 'var(--space-6) var(--space-4)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 'var(--space-2)',
-      minHeight: 'calc(100vh - var(--navbar-height))'
-    }}>
-      <div style={{ marginBottom: 'var(--space-4)', fontSize: 'var(--font-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', paddingLeft: 'var(--space-4)' }}>
+    <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
+      {/* Mobile close button */}
+      <div className="sidebar-mobile-header">
+        <span style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--accent)' }}>AttendEase</span>
+        <button className="btn-icon" onClick={onClose} aria-label="Close sidebar">
+          <FiX size={20} />
+        </button>
+      </div>
+
+      <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', paddingLeft: 'var(--space-4)', marginBottom: 'var(--space-2)' }}>
         Menu
       </div>
       
@@ -45,6 +43,7 @@ export default function Sidebar({ userRole }) {
           key={link.path}
           to={link.path}
           end={link.path.split('/').length <= 2}
+          onClick={onClose}
           style={({ isActive }) => ({
             display: 'flex',
             alignItems: 'center',
@@ -66,11 +65,15 @@ export default function Sidebar({ userRole }) {
       <div style={{ marginTop: 'auto' }}>
         <NavLink
           to="/settings"
-          style={{
+          onClick={onClose}
+          style={({ isActive }) => ({
             display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
             padding: 'var(--space-3) var(--space-4)', borderRadius: 'var(--radius-md)',
-            color: 'var(--text-secondary)', textDecoration: 'none'
-          }}
+            color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
+            background: isActive ? 'var(--accent-light)' : 'transparent',
+            textDecoration: 'none',
+            transition: 'all var(--transition-fast)'
+          })}
         >
           <FiSettings /> Settings
         </NavLink>

@@ -9,7 +9,7 @@ export default function ManageSubjects() {
 
   const fetchSubjects = async () => {
     try {
-      const res = await api.get('/subjects');
+      const res = await api.get('/subjects/all');
       setSubjects(res.data.data);
     } catch (err) {
       toast.error('Failed to load subjects');
@@ -25,7 +25,7 @@ export default function ManageSubjects() {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/subjects', newSubject);
+      await api.post('/subjects/create', newSubject);
       toast.success('Subject created successfully!');
       setNewSubject({ name: '', code: '', semester: 1 });
       fetchSubjects();

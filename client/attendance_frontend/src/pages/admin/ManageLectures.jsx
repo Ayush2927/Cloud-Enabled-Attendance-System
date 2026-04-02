@@ -23,7 +23,7 @@ export default function ManageLectures() {
     try {
       const [lecRes, subRes] = await Promise.all([
         api.get('/lectures/all'),
-        api.get('/subjects')
+        api.get('/subjects/all')
       ]);
       setLectures(lecRes.data.data);
       setSubjects(subRes.data.data);

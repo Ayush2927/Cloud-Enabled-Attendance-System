@@ -10,6 +10,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageSubjects from './pages/admin/ManageSubjects';
 import ManageLectures from './pages/admin/ManageLectures';
 import SystemLogs from './pages/admin/SystemLogs';
+import SettingsPage from './pages/settings/SettingsPage';
 
 import AttendancePage from './pages/AttendancePage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -48,6 +49,11 @@ function App() {
             <Route path="/admin/subjects" element={<ManageSubjects />} />
             <Route path="/admin/lectures" element={<ManageLectures />} />
             <Route path="/admin/logs" element={<SystemLogs />} />
+          </Route>
+
+          {/* Settings — accessible by ALL authenticated roles */}
+          <Route element={<ProtectedRoute allowedRoles={['Student', 'Teacher', 'Admin']} />}>
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
 
         </Route>

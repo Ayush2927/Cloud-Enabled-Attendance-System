@@ -27,7 +27,7 @@ export default function TeacherDashboard() {
 
   const handleShiftChange = async (lectureId, newStatus) => {
     try {
-      await api.patch('/attendance/teacher/shift', {
+      await api.post('/attendance/teacher/shift', {
         lectureId,
         status: newStatus
       });
