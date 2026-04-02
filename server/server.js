@@ -67,7 +67,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 
 // Body Parsers: reasonable limit to prevent abuse
 app.use(express.json({ limit: "2mb" }));
