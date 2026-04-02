@@ -1,14 +1,18 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
   server: {
     proxy: {
       '/api': {
         target: 'https://cloud-enabled-attendance-system-hxlg.onrender.com',
         changeOrigin: true,
-        secure: false, // Bypass SSL validation if needed in dev proxy
+        secure: false,
       }
     }
   }
