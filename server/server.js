@@ -47,9 +47,7 @@ app.use(generalLimiter);
 const allowedOrigins = [
     "http://localhost:5173", 
     "http://localhost:5174",
-    "http://localhost:3000",
     "https://cloud-enabled-attendance-system-pink.vercel.app",
-    "https://cloud-enabled-attendance-system-gu853ppny.vercel.app",
     process.env.CORS_ORIGIN
 ].filter(Boolean);
 

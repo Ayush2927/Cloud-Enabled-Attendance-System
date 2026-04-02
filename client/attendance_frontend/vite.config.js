@@ -8,7 +8,7 @@ export default defineConfig({
       '/api': {
         target: 'https://cloud-enabled-attendance-system-hxlg.onrender.com',
         changeOrigin: true,
-        secure: false,
+        secure: false, // Bypass SSL validation if needed in dev proxy
       }
     }
   }
