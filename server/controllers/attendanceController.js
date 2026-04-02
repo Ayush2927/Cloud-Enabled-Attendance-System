@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
-import { formatToIST } from "../utils/timeUtils.js";
+import { formatToIST, getTodayDateString } from "../utils/timeUtils.js";
 
 const markStudentAttendance = asyncHandler(async (req, res) => {
     const { lectureId, liveFaceImage } = req.body;
@@ -50,7 +50,7 @@ const markStudentAttendance = asyncHandler(async (req, res) => {
         user: studentId,
         subject: lecture.subject,
         lecture: lectureId,
-        date: new Date().toISOString().split("T")[0],
+        date: getTodayDateString(),
         status: "Present",
         capturedFace: liveFaceImage
     });
@@ -80,7 +80,7 @@ const logTeacherShift = asyncHandler(async (req, res) => {
         throw new ApiError(403, "You are not assigned to this lecture");
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayDateString();
 
     // Start session
     if (lecture.sessionStatus === "Scheduled") {

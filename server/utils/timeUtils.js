@@ -13,3 +13,15 @@ export const formatToIST = (date) => {
         year: "numeric"
     });
 };
+
+// Returns YYYY-MM-DD in the configured timezone (defaults to Asia/Kolkata)
+export const getTodayDateString = (timeZone = process.env.APP_TIMEZONE || "Asia/Kolkata") => {
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    });
+
+    return formatter.format(new Date());
+};

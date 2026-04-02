@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
+import { getTodayDateString } from "../utils/timeUtils.js";
 
 // Admin: schedule a new lecture slot
 const createLecture = asyncHandler(async (req, res) => {
@@ -61,7 +62,7 @@ const getTodayTimetable = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Division parameter is required");
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayDateString();
 
     const lectures = await Lecture.find({
         division: division.toUpperCase(),
@@ -78,7 +79,7 @@ const getTodayTimetable = asyncHandler(async (req, res) => {
 
 // Teacher: get their own lectures for today
 const getMyTodayLectures = asyncHandler(async (req, res) => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayDateString();
 
     const lectures = await Lecture.find({
         teacher: req.user._id,

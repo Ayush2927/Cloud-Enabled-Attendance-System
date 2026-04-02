@@ -43,26 +43,31 @@ const authLimiter = rateLimit({
 
 app.use(generalLimiter);
 
-// CORS: Strickly whitelisted origins for 100% reliable Chrome credential passing
+// CORS: strictly whitelisted origins for credentialed requests
 const allowedOrigins = [
-    "http://localhost:5173", 
+    "http://localhost:5173",
     "http://localhost:5174",
     "https://cloud-enabled-attendance-system-pink.vercel.app",
-    process.env.CORS_ORIGIN
-].filter(Boolean);
+    ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : [])
+]
+    .map(origin => origin.trim())
+    .filter(Boolean);
 
-app.use(cors({
+const corsOptions = {
     origin: function(origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, origin);
+            callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error(`Not allowed by CORS: ${origin}`));
         }
     },
     credentials: true,
     methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
-}));
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Body Parsers: reasonable limit to prevent abuse
 app.use(express.json({ limit: "2mb" }));
