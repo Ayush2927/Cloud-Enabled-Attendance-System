@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiUsers, FiBook, FiClock, FiActivity, FiArrowRight } from 'react-icons/fi';
+import { Users, BookOpen, Clock, Activity, ArrowRight, Server, Archive } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -45,70 +46,98 @@ export default function AdminDashboard() {
   }, []);
 
   const statCards = [
-    { label: 'Total Subjects', value: stats.totalSubjects, icon: <FiBook />, color: 'var(--accent)' },
-    { label: 'Total Lectures', value: stats.totalLectures, icon: <FiClock />, color: 'var(--info)' },
-    { label: 'Active Sessions', value: stats.activeSessions, icon: <FiActivity />, color: 'var(--success)' },
-    { label: 'Ended Sessions', value: stats.endedSessions, icon: <FiUsers />, color: 'var(--warning)' },
+    { label: 'Total Modules', value: stats.totalSubjects, icon: <BookOpen className="text-indigo-400" />, glow: 'shadow-[0_0_20px_rgba(99,102,241,0.2)]', bg: 'bg-indigo-400/10' },
+    { label: 'Total Instances', value: stats.totalLectures, icon: <Clock className="text-cyan-400" />, glow: 'shadow-[0_0_20px_rgba(34,211,238,0.2)]', bg: 'bg-cyan-400/10' },
+    { label: 'Active Protocols', value: stats.activeSessions, icon: <Activity className="text-emerald-400" />, glow: 'shadow-[0_0_20px_rgba(52,211,153,0.2)]', bg: 'bg-emerald-400/10' },
+    { label: 'Closed Matrices', value: stats.endedSessions, icon: <Archive className="text-amber-400" />, glow: 'shadow-[0_0_20px_rgba(251,191,36,0.2)]', bg: 'bg-amber-400/10' },
   ];
 
   const quickActions = [
-    { label: 'Manage Subjects', description: 'Create and view course curricula', path: '/admin/subjects', icon: <FiBook size={20} /> },
-    { label: 'Schedule Lectures', description: 'Assign instructors and time slots', path: '/admin/lectures', icon: <FiClock size={20} /> },
-    { label: 'Attendance Logs', description: 'Audit biometric verification records', path: '/admin/logs', icon: <FiUsers size={20} /> },
+    { label: 'Module Engine', description: 'Configure academic curriculums', path: '/admin/subjects', icon: <BookOpen size={20} className="text-indigo-400" />, borderHover: 'hover:border-indigo-500/30' },
+    { label: 'Temporal Scheduler', description: 'Assign instructors to matrices', path: '/admin/lectures', icon: <Clock size={20} className="text-cyan-400" />, borderHover: 'hover:border-cyan-500/30' },
+    { label: 'System Logs', description: 'Audit bio-recognition anomalies', path: '/admin/logs', icon: <Users size={20} className="text-emerald-400" />, borderHover: 'hover:border-emerald-500/30' },
   ];
 
-  return (
-    <div className="page animate-fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Admin Control Center</h1>
-        <p className="page-subtitle">Welcome back, {user?.name}. Manage the entire platform infrastructure.</p>
-      </div>
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0, filter: 'blur(5px)' },
+    visible: { y: 0, opacity: 1, filter: 'blur(0px)', transition: { type: "spring", stiffness: 200 } }
+  };
 
-      <div className="grid-3" style={{ marginBottom: 'var(--space-8)' }}>
+  return (
+    <div className="container mx-auto px-4 py-8 md:p-10 w-full max-w-7xl relative z-10">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+        className="flex flex-col gap-4 mb-12 border-b border-white/10 pb-8 relative"
+      >
+        <div className="absolute top-0 right-1/4 w-64 h-64 bg-indigo-600/10 blur-[100px] pointer-events-none rounded-full" />
+        <div className="relative z-10">
+          <motion.div 
+            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring" }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold uppercase tracking-widest mb-4"
+          >
+            <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+            Root Access Verified
+          </motion.div>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-br from-white to-white/50">
+            System Overseer ({user?.name.split(' ')[0]})
+          </h1>
+          <p className="text-slate-400 text-lg font-medium">Global infrastructure and temporal state management.</p>
+        </div>
+      </motion.div>
+
+      {/* Bento Grid Stats */}
+      <motion.div 
+        variants={containerVariants} initial="hidden" animate="visible"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12"
+      >
         {statCards.map((stat, idx) => (
-          <div key={idx} className={`card-glass ${isLoading ? 'animate-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
+          <motion.div 
+            key={idx} variants={itemVariants}
+            className={`group relative flex flex-col p-6 rounded-[2rem] bg-black/40 backdrop-blur-2xl border border-white/10 overflow-hidden ${isLoading ? 'animate-pulse' : ''}`}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            
+            <div className={`w-14 h-14 rounded-2xl ${stat.bg} ${stat.glow} flex items-center justify-center mb-6 ring-1 ring-white/5 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3`}>
               {stat.icon}
             </div>
-            <div>
-              <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{stat.label}</div>
-              <div style={{ fontSize: 'var(--font-3xl)', fontWeight: 800 }}>{stat.value}</div>
-            </div>
-          </div>
+            
+            <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{stat.label}</div>
+            <div className="text-4xl font-extrabold text-white tracking-tight">{stat.value}</div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="card-glass" style={{ marginBottom: 'var(--space-6)' }}>
-        <h2 style={{ fontSize: 'var(--font-lg)', marginBottom: 'var(--space-4)' }}>Quick Actions</h2>
-        <div className="grid-3" style={{ gap: 'var(--space-4)' }}>
+      {/* Core Functions */}
+      <div className="mb-10">
+        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <Activity className="text-indigo-400" size={20} /> Core Directives
+        </h2>
+        
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {quickActions.map((action, idx) => (
-            <button
-              key={idx}
-              onClick={() => navigate(action.path)}
-              className="card"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 'var(--space-4)',
-                cursor: 'pointer', textAlign: 'left', width: '100%',
-                padding: 'var(--space-4)', transition: 'all var(--transition-base)'
-              }}
-              id={`quick-action-${idx}`}
-            >
-              <div style={{
-                width: '42px', height: '42px', borderRadius: 'var(--radius-md)',
-                background: 'var(--accent-light)', display: 'flex',
-                alignItems: 'center', justifyContent: 'center', color: 'var(--accent)',
-                flexShrink: 0
-              }}>
-                {action.icon}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: 'var(--font-sm)', marginBottom: '2px' }}>{action.label}</div>
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)' }}>{action.description}</div>
-              </div>
-              <FiArrowRight size={16} color="var(--text-muted)" />
-            </button>
+            <motion.div key={idx} variants={itemVariants}>
+              <button
+                onClick={() => navigate(action.path)}
+                className={`w-full group flex flex-col items-start p-6 rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/5 shadow-2xl transition-all duration-300 hover:bg-slate-950/80 ${action.borderHover} overflow-hidden relative text-left`}
+              >
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                  <ArrowRight className="text-white/30" />
+                </div>
+
+                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
+                  {action.icon}
+                </div>
+                
+                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-indigo-100 transition-colors">{action.label}</h3>
+                <p className="text-sm font-medium text-slate-400 max-w-[80%]">{action.description}</p>
+              </button>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
