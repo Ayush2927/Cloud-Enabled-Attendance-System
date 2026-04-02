@@ -100,10 +100,11 @@ export default function Navbar({ onToggleSidebar }) {
               <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)' }}>{user?.role}</span>
             </div>
             <div style={{
-              width: '36px', height: '36px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
+              width: '36px', height: '36px', borderRadius: '0', 
+              background: '#0a0a0a',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px solid var(--accent)', color: 'white', fontWeight: 700, fontSize: 'var(--font-sm)'
+              border: '1px solid var(--accent)', color: 'var(--accent)', fontWeight: 900, fontSize: 'var(--font-sm)',
+              boxShadow: '0 0 10px rgba(204, 255, 0, 0.2)'
             }}>
               {user?.name?.charAt(0)?.toUpperCase()}
             </div>

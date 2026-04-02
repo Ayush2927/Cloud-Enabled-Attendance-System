@@ -75,10 +75,13 @@ export default function SettingsPage() {
             
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)', marginBottom: 'var(--space-8)' }}>
               <div style={{
-                width: '80px', height: '80px', borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
+                width: '80px', height: '80px', borderRadius: '0', /* No more circles */
+                background: 'linear-gradient(135deg, #111, #000)',
+                border: '1px solid var(--accent)',
+                boxShadow: '0 0 15px rgba(204, 255, 0, 0.1) inset, 0 0 10px rgba(204, 255, 0, 0.2)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 'var(--font-3xl)', fontWeight: 700, color: 'var(--text-inverse)',
+                fontSize: 'var(--font-3xl)', fontWeight: 900, color: 'var(--accent)',
+                fontFamily: 'monospace',
                 flexShrink: 0
               }}>
                 {user?.name?.charAt(0)?.toUpperCase()}

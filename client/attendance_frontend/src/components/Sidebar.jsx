@@ -27,9 +27,9 @@ export default function Sidebar({ userRole, isOpen, onClose }) {
   return (
     <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
       {/* Mobile close button */}
-      <div className="sidebar-mobile-header">
-        <span style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--accent)' }}>AttendEase</span>
-        <button className="btn-icon" onClick={onClose} aria-label="Close sidebar">
+      <div className="sidebar-mobile-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
+        <div className="sidebar-logo">AttendEase</div>
+        <button className="btn-icon" onClick={onClose} aria-label="Close sidebar" style={{ color: 'var(--text-muted)' }}>
           <FiX size={20} />
         </button>
       </div>
