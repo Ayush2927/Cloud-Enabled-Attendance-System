@@ -6,7 +6,7 @@ import { FiTrash2 } from 'react-icons/fi';
 export default function ManageLectures() {
   const [lectures, setLectures] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  // In a full app, you would fetch teachers to populate a dropdown here as well
+  const [teachers, setTeachers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Form State
@@ -21,14 +21,20 @@ export default function ManageLectures() {
 
   const fetchData = async () => {
     try {
-      const [lecRes, subRes] = await Promise.all([
+      const [lecRes, subRes, teachRes] = await Promise.all([
         api.get('/lectures/all'),
-        api.get('/subjects/all')
+        api.get('/subjects/all'),
+        api.get('/auth/teachers')
       ]);
       setLectures(lecRes.data.data);
       setSubjects(subRes.data.data);
+      setTeachers(teachRes.data.data);
+      
       if (subRes.data.data.length > 0) {
         setFormData(prev => ({ ...prev, subject: subRes.data.data[0]._id }));
+      }
+      if (teachRes.data.data.length > 0) {
+        setFormData(prev => ({ ...prev, teacher: teachRes.data.data[0]._id }));
       }
     } catch (err) {
       toast.error('Failed to load data from server');
@@ -44,8 +50,8 @@ export default function ManageLectures() {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      if (!formData.teacher || formData.teacher.length !== 24) {
-        toast.error('Please enter a valid Teacher ID for now (24-char ObjectID)');
+      if (!formData.teacher) {
+        toast.error('Please select a teacher from the dropdown. If none, register a teacher first.');
         return;
       }
       await api.post('/lectures/create', formData);
@@ -90,9 +96,16 @@ export default function ManageLectures() {
             </div>
 
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label className="form-label">Teacher ObjectId</label>
-              <input type="text" className="form-input" placeholder="Paste Teacher's MongoDB _id..." value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} required />
-              <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', marginTop: '4px' }}>In production, this would be a dropdown of active teachers.</div>
+              <label className="form-label">Instructor (Teacher)</label>
+              <select className="form-select" value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} required>
+                <option value="">-- Choose Instructor --</option>
+                {teachers.map(t => <option key={t._id} value={t._id}>{t.name} ({t.email})</option>)}
+              </select>
+              {teachers.length === 0 && (
+                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--danger)', marginTop: '4px' }}>
+                  No teachers found. You must register a Teacher account before scheduling.
+                </div>
+              )}
             </div>
 
             <div className="form-group" style={{ gridColumn: 'span 2' }}>

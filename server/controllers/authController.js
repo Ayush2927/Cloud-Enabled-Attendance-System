@@ -175,4 +175,9 @@ const changePassword = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changePassword };
+const getAllTeachers = asyncHandler(async (req, res) => {
+    const teachers = await User.find({ role: "Teacher" }).select("-password -refreshToken");
+    return res.status(200).json(new ApiResponse(200, teachers, "Teachers fetched successfully"));
+});
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changePassword, getAllTeachers };
