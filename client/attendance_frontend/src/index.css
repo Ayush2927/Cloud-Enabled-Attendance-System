@@ -257,42 +257,186 @@ h4 { font-size: var(--font-xl); }
   box-shadow: 0 0 8px var(--accent-glow);
 }
 
-/* Sidebar and Navbar Tweaks */
-.sidebar {
-  border-right: 1px solid #222;
+/* --- Layout Structure (Restored) --- */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
 }
 
-.sidebar .active {
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  padding: var(--space-6) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: transform var(--transition-base);
+}
+
+.sidebar-logo {
+  font-size: var(--font-xl);
+  font-weight: 900;
+  color: var(--accent);
+  margin-bottom: var(--space-8);
+  padding-left: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-link:hover {
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.sidebar-link.active {
   background: var(--accent) !important;
   color: var(--text-inverse) !important;
+  font-weight: 800;
 }
 
-/* Flex & Utils */
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.gap-4 { gap: var(--space-4); }
-
-/* Animation Utils */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Navbar */
+.navbar {
+  height: var(--navbar-height);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.4s ease;
+/* Tables Styling */
+.table-container {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
 }
 
-/* Table Design */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  padding: var(--space-4);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
 .table th {
-  background: #111;
-  border-bottom: 2px solid var(--accent);
+  background: var(--bg-elevated);
+  font-size: var(--font-xs);
   color: var(--accent);
+  text-transform: uppercase;
 }
 
-/* Status Badges */
+/* Badges */
 .badge {
+  padding: 2px 8px;
+  font-size: var(--font-xs);
+  text-transform: uppercase;
   font-weight: 900;
   border: 1px solid currentColor;
+}
+
+.badge-success { color: var(--success); background: var(--success-bg); }
+.badge-warning { color: var(--warning); background: var(--warning-bg); }
+.badge-danger { color: var(--danger); background: var(--danger-bg); }
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    transform: translateX(-100%);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 199;
+  }
+}
+
+/* --- Auth Page Layout Fix --- */
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-4);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 450px;
+  border: 1px solid var(--accent);
+  padding: var(--space-10);
+  background: var(--bg-card);
+}
+
+.form-group {
+  margin-bottom: var(--space-4);
+}
+
+.form-label {
+  display: block;
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+  font-weight: 800;
+}
+
+.form-input, .form-select {
+  width: 100%;
+  padding: var(--space-3);
+  background: #050505;
+  border: 1px solid #222;
+  color: #fff;
+  font-family: inherit;
+}
+
+.form-input:focus {
+  border-color: var(--accent);
+  outline: none;
 }
