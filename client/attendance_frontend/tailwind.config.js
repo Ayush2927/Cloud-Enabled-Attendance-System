@@ -50,10 +50,28 @@ export default {
         "float": {
           "0%": { transform: "translate(0, 0)" },
           "100%": { transform: "translate(10vw, 5vw)" }
-        }
+        },
+        meteor: {
+          "0%": { transform: "rotate(215deg) translateX(0)", opacity: "1" },
+          "70%": { opacity: "1" },
+          "100%": {
+            transform: "rotate(215deg) translateX(-500px)",
+            opacity: "0",
+          },
+        },
+        shimmer: {
+          "0%, 90%, 100%": {
+            "background-position": "calc(-100% - var(--shimmer-width)) 0",
+          },
+          "30%, 60%": {
+            "background-position": "calc(100% + var(--shimmer-width)) 0",
+          },
+        },
       },
       animation: {
-        "float": "float 20s infinite ease-in-out alternate"
+        "float": "float 20s infinite ease-in-out alternate",
+        "meteor-effect": "meteor 5s linear infinite",
+        shimmer: "shimmer var(--duration) infinite linear",
       }
     },
   },

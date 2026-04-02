@@ -5,6 +5,10 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { MagicCard } from '../../components/ui/MagicCard';
+import { ShimmerButton } from '../../components/ui/ShimmerButton';
+import { Meteors } from '../../components/ui/Meteors';
+import { cn } from '../../lib/utils';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -46,16 +50,16 @@ export default function AdminDashboard() {
   }, []);
 
   const statCards = [
-    { label: 'Total Modules', value: stats.totalSubjects, icon: <BookOpen className="text-indigo-400" />, glow: 'shadow-[0_0_20px_rgba(99,102,241,0.2)]', bg: 'bg-indigo-400/10' },
-    { label: 'Total Instances', value: stats.totalLectures, icon: <Clock className="text-cyan-400" />, glow: 'shadow-[0_0_20px_rgba(34,211,238,0.2)]', bg: 'bg-cyan-400/10' },
-    { label: 'Active Protocols', value: stats.activeSessions, icon: <Activity className="text-emerald-400" />, glow: 'shadow-[0_0_20px_rgba(52,211,153,0.2)]', bg: 'bg-emerald-400/10' },
-    { label: 'Closed Matrices', value: stats.endedSessions, icon: <Archive className="text-amber-400" />, glow: 'shadow-[0_0_20px_rgba(251,191,36,0.2)]', bg: 'bg-amber-400/10' },
+    { label: 'Total Modules', value: stats.totalSubjects, icon: <BookOpen className="text-indigo-400" />, glowColor: "rgba(99, 102, 241, 0.2)", bg: 'bg-indigo-400/10' },
+    { label: 'Total Instances', value: stats.totalLectures, icon: <Clock className="text-cyan-400" />, glowColor: "rgba(34, 211, 238, 0.2)", bg: 'bg-cyan-400/10' },
+    { label: 'Active Protocols', value: stats.activeSessions, icon: <Activity className="text-emerald-400" />, glowColor: "rgba(52, 211, 153, 0.2)", bg: 'bg-emerald-400/10' },
+    { label: 'Closed Matrices', value: stats.endedSessions, icon: <Archive className="text-amber-400" />, glowColor: "rgba(251, 191, 36, 0.2)", bg: 'bg-amber-400/10' },
   ];
 
   const quickActions = [
-    { label: 'Module Engine', description: 'Configure academic curriculums', path: '/admin/subjects', icon: <BookOpen size={20} className="text-indigo-400" />, borderHover: 'hover:border-indigo-500/30' },
-    { label: 'Temporal Scheduler', description: 'Assign instructors to matrices', path: '/admin/lectures', icon: <Clock size={20} className="text-cyan-400" />, borderHover: 'hover:border-cyan-500/30' },
-    { label: 'System Logs', description: 'Audit bio-recognition anomalies', path: '/admin/logs', icon: <Users size={20} className="text-emerald-400" />, borderHover: 'hover:border-emerald-500/30' },
+    { label: 'Module Engine', description: 'Configure academic curriculums', path: '/admin/subjects', icon: <BookOpen size={20} className="text-indigo-400" /> },
+    { label: 'Temporal Scheduler', description: 'Assign instructors to matrices', path: '/admin/lectures', icon: <Clock size={20} className="text-cyan-400" /> },
+    { label: 'System Logs', description: 'Audit bio-recognition anomalies', path: '/admin/logs', icon: <Users size={20} className="text-emerald-400" /> },
   ];
 
   const containerVariants = {
@@ -68,7 +72,9 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 md:p-10 w-full max-w-7xl relative z-10">
+    <div className="container mx-auto px-4 py-8 md:p-10 w-full max-w-7xl relative z-10 overflow-hidden min-h-screen">
+      <Meteors number={20} />
+      
       <motion.div 
         initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         className="flex flex-col gap-4 mb-12 border-b border-white/10 pb-8 relative"
@@ -95,18 +101,17 @@ export default function AdminDashboard() {
         className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12"
       >
         {statCards.map((stat, idx) => (
-          <motion.div 
-            key={idx} variants={itemVariants}
-            className={`group relative flex flex-col p-6 rounded-[2rem] bg-black/40 backdrop-blur-2xl border border-white/10 overflow-hidden ${isLoading ? 'animate-pulse' : ''}`}
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            
-            <div className={`w-14 h-14 rounded-2xl ${stat.bg} ${stat.glow} flex items-center justify-center mb-6 ring-1 ring-white/5 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3`}>
-              {stat.icon}
-            </div>
-            
-            <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{stat.label}</div>
-            <div className="text-4xl font-extrabold text-white tracking-tight">{stat.value}</div>
+          <motion.div key={idx} variants={itemVariants}>
+            <MagicCard 
+              className={cn("p-6", isLoading && "animate-pulse")}
+              gradientColor={stat.glowColor}
+            >
+              <div className={`w-14 h-14 rounded-2xl ${stat.bg} flex items-center justify-center mb-6 ring-1 ring-white/5 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3`}>
+                {stat.icon}
+              </div>
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{stat.label}</div>
+              <div className="text-4xl font-extrabold text-white tracking-tight">{stat.value}</div>
+            </MagicCard>
           </motion.div>
         ))}
       </motion.div>
@@ -120,21 +125,24 @@ export default function AdminDashboard() {
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {quickActions.map((action, idx) => (
             <motion.div key={idx} variants={itemVariants}>
-              <button
+              <ShimmerButton
+                className="w-full justify-start h-auto p-0 border-none bg-transparent"
                 onClick={() => navigate(action.path)}
-                className={`w-full group flex flex-col items-start p-6 rounded-[2rem] bg-black/40 backdrop-blur-xl border border-white/5 shadow-2xl transition-all duration-300 hover:bg-slate-950/80 ${action.borderHover} overflow-hidden relative text-left`}
+                borderRadius="2rem"
               >
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-                  <ArrowRight className="text-white/30" />
-                </div>
+                <div className="w-full flex flex-col items-start p-6 bg-black/40 backdrop-blur-xl border border-white/5 shadow-2xl rounded-[2rem] text-left">
+                  <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                    <ArrowRight className="text-white/30" />
+                  </div>
 
-                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
-                  {action.icon}
+                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
+                    {action.icon}
+                  </div>
+                  
+                  <h3 className="text-lg font-bold text-white mb-1 group-hover:text-indigo-100 transition-colors uppercase tracking-tight">{action.label}</h3>
+                  <p className="text-sm font-medium text-slate-400 max-w-[80%] normal-case">{action.description}</p>
                 </div>
-                
-                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-indigo-100 transition-colors">{action.label}</h3>
-                <p className="text-sm font-medium text-slate-400 max-w-[80%]">{action.description}</p>
-              </button>
+              </ShimmerButton>
             </motion.div>
           ))}
         </motion.div>
