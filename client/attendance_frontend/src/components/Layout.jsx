@@ -9,7 +9,7 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) {
-    return <div className="page flex justify-center items-center" style={{ height: '100vh' }}>Loading...</div>;
+    return <div className="loading-screen">Loading...</div>;
   }
 
   if (!isAuthenticated) {
@@ -17,9 +17,9 @@ export default function Layout() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
+    <div className="layout-shell">
       <Navbar onToggleSidebar={() => setSidebarOpen(prev => !prev)} />
-      <div style={{ display: 'flex', flex: 1 }}>
+      <div className="layout-body">
         <Sidebar userRole={user?.role} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         {/* Mobile overlay when sidebar is open */}
         {sidebarOpen && (
@@ -28,7 +28,7 @@ export default function Layout() {
             onClick={() => setSidebarOpen(false)}
           />
         )}
-        <main style={{ flex: 1, overflowX: 'hidden' }}>
+        <main className="layout-main">
           <Outlet />
         </main>
       </div>

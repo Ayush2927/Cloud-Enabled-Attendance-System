@@ -64,48 +64,38 @@ export default function AdminDashboard() {
         <p className="page-subtitle">Welcome back, {user?.name}. Manage the entire platform infrastructure.</p>
       </div>
 
-      <div className="grid-3" style={{ marginBottom: 'var(--space-8)' }}>
+      <div className="grid-3 page-section-lg">
         {statCards.map((stat, idx) => (
-          <div key={idx} className={`card-glass ${isLoading ? 'animate-pulse' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
+          <div key={idx} className={`card-glass stat-card ${isLoading ? 'animate-pulse' : ''}`}>
+            <div className="stat-icon" style={{ color: stat.color }}>
               {stat.icon}
             </div>
-            <div>
-              <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{stat.label}</div>
-              <div style={{ fontSize: 'var(--font-3xl)', fontWeight: 800 }}>{stat.value}</div>
+            <div className="stat-content">
+              <div className="stat-label">{stat.label}</div>
+              <div className="stat-value">{stat.value}</div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="card-glass" style={{ marginBottom: 'var(--space-6)' }}>
-        <h2 style={{ fontSize: 'var(--font-lg)', marginBottom: 'var(--space-4)' }}>Quick Actions</h2>
-        <div className="grid-3" style={{ gap: 'var(--space-4)' }}>
+      <div className="card-glass page-section">
+        <h2 className="section-title">Quick Actions</h2>
+        <div className="grid-3">
           {quickActions.map((action, idx) => (
             <button
               key={idx}
               onClick={() => navigate(action.path)}
-              className="card"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 'var(--space-4)',
-                cursor: 'pointer', textAlign: 'left', width: '100%',
-                padding: 'var(--space-4)', transition: 'all var(--transition-base)'
-              }}
+              className="card action-card"
               id={`quick-action-${idx}`}
             >
-              <div style={{
-                width: '42px', height: '42px', borderRadius: 'var(--radius-md)',
-                background: 'var(--accent-light)', display: 'flex',
-                alignItems: 'center', justifyContent: 'center', color: 'var(--accent)',
-                flexShrink: 0
-              }}>
+              <div className="action-icon">
                 {action.icon}
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: 'var(--font-sm)', marginBottom: '2px' }}>{action.label}</div>
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)' }}>{action.description}</div>
+              <div className="action-body">
+                <div className="action-title">{action.label}</div>
+                <div className="action-description">{action.description}</div>
               </div>
-              <FiArrowRight size={16} color="var(--text-muted)" />
+              <FiArrowRight size={16} className="action-arrow" />
             </button>
           ))}
         </div>

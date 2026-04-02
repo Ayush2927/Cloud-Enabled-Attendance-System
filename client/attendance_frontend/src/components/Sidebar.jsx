@@ -27,14 +27,14 @@ export default function Sidebar({ userRole, isOpen, onClose }) {
   return (
     <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
       {/* Mobile close button */}
-      <div className="sidebar-mobile-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
+      <div className="sidebar-mobile-header">
         <div className="sidebar-logo">AttendEase</div>
-        <button className="btn-icon" onClick={onClose} aria-label="Close sidebar" style={{ color: 'var(--text-muted)' }}>
+        <button className="btn-icon sidebar-close" onClick={onClose} aria-label="Close sidebar">
           <FiX size={20} />
         </button>
       </div>
 
-      <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', paddingLeft: 'var(--space-4)', marginBottom: 'var(--space-2)' }}>
+      <div className="sidebar-menu-label">
         Menu
       </div>
       
@@ -44,36 +44,18 @@ export default function Sidebar({ userRole, isOpen, onClose }) {
           to={link.path}
           end={link.path.split('/').length <= 2}
           onClick={onClose}
-          style={({ isActive }) => ({
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-3)',
-            padding: 'var(--space-3) var(--space-4)',
-            borderRadius: 'var(--radius-md)',
-            color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
-            background: isActive ? 'var(--accent-light)' : 'transparent',
-            fontWeight: isActive ? 600 : 500,
-            textDecoration: 'none',
-            transition: 'all var(--transition-fast)'
-          })}
+          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
         >
           {link.icon}
           {link.name}
         </NavLink>
       ))}
 
-      <div style={{ marginTop: 'auto' }}>
+      <div className="sidebar-footer-link">
         <NavLink
           to="/settings"
           onClick={onClose}
-          style={({ isActive }) => ({
-            display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
-            padding: 'var(--space-3) var(--space-4)', borderRadius: 'var(--radius-md)',
-            color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
-            background: isActive ? 'var(--accent-light)' : 'transparent',
-            textDecoration: 'none',
-            transition: 'all var(--transition-fast)'
-          })}
+          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
         >
           <FiSettings /> Settings
         </NavLink>

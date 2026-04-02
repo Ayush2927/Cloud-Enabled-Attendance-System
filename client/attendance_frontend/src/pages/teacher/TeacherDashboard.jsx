@@ -41,18 +41,18 @@ export default function TeacherDashboard() {
 
   return (
     <div className="page animate-fade-in">
-      <div className="page-header flex justify-between items-center" style={{ flexWrap: 'wrap', gap: 'var(--space-4)' }}>
+      <div className="page-header page-header-row">
         <div>
           <h1 className="page-title">Welcome, Prof. {user?.name.split(' ')[0]}</h1>
           <p className="page-subtitle">Manage your sessions and track student attendance.</p>
         </div>
       </div>
 
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <h2 style={{ fontSize: 'var(--font-xl)', marginBottom: 'var(--space-4)' }}>Your Schedule for Today</h2>
+      <div className="page-section">
+        <h2 className="section-title">Your Schedule for Today</h2>
         
         {isLoading ? (
-          <div className="card-glass animate-pulse" style={{ height: '150px' }}></div>
+          <div className="card-glass animate-pulse skeleton-card"></div>
         ) : lectures.length === 0 ? (
           <div className="card-glass empty-state">
             <h3>No lectures assigned today</h3>
@@ -61,32 +61,31 @@ export default function TeacherDashboard() {
         ) : (
           <div className="grid-2">
             {lectures.map((lecture) => (
-              <div key={lecture._id} className="card-glass" style={{ display: 'flex', flexDirection: 'column' }}>
-                <div className="flex justify-between items-center" style={{ marginBottom: 'var(--space-4)' }}>
+              <div key={lecture._id} className="card-glass card-col">
+                <div className="card-row-between mb-md">
                   <span className={`badge ${
                     lecture.sessionStatus === 'Active' ? 'badge-success' : 
                     lecture.sessionStatus === 'Ended' ? 'badge-info' : 'badge-warning'
                   }`}>
                     {lecture.sessionStatus}
                   </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }}>
+                  <div className="meta-inline">
                     <FiClock /> {lecture.startTime} - {lecture.endTime}
                   </div>
                 </div>
 
-                <h3 style={{ fontSize: 'var(--font-xl)', marginBottom: 'var(--space-1)' }}>
+                <h3 className="card-title-md">
                   {lecture.subject.name} ({lecture.subject.code})
                 </h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-md)', marginBottom: 'var(--space-6)' }}>
+                <p className="card-subtitle mb-lg">
                   Division {lecture.division} • Room: TBA
                 </p>
 
-                <div style={{ marginTop: 'auto', display: 'flex', gap: 'var(--space-3)' }}>
+                <div className="card-footer-auto row-actions">
                   {lecture.sessionStatus === 'Scheduled' && (
                     <button 
                       onClick={() => handleShiftChange(lecture._id, 'Active')}
-                      className="btn btn-primary" 
-                      style={{ flex: 1 }}
+                      className="btn btn-primary flex-1"
                     >
                       <FiPlayCircle size={18} /> Start Session
                     </button>
@@ -94,8 +93,7 @@ export default function TeacherDashboard() {
                   {lecture.sessionStatus === 'Active' && (
                     <button 
                       onClick={() => handleShiftChange(lecture._id, 'Ended')}
-                      className="btn btn-danger" 
-                      style={{ flex: 1 }}
+                      className="btn btn-danger flex-1"
                     >
                       <FiStopCircle size={18} /> End Session & Lock
                     </button>
@@ -103,8 +101,7 @@ export default function TeacherDashboard() {
                   {lecture.sessionStatus === 'Ended' && (
                     <button 
                       disabled
-                      className="btn btn-secondary" 
-                      style={{ flex: 1, opacity: 0.5, cursor: 'not-allowed' }}
+                      className="btn btn-secondary flex-1"
                     >
                       Session Closed
                     </button>
@@ -116,10 +113,10 @@ export default function TeacherDashboard() {
         )}
       </div>
 
-      <div className="card-glass grid-2" style={{ gap: 'var(--space-6)' }}>
+      <div className="card-glass grid-2">
         <div>
-          <h3>Quick Tips</h3>
-          <ul style={{ paddingLeft: '20px', color: 'var(--text-secondary)', marginTop: 'var(--space-3)', lineHeight: 1.6 }}>
+          <h3 className="section-title-sm">Quick Tips</h3>
+          <ul className="tips-list">
             <li>Click <strong>Start Session</strong> when you enter the physical classroom.</li>
             <li>Once started, students will see the 'Mark Present' button on their dashboards.</li>
             <li>Click <strong>End Session</strong> right before leaving. Any student who didn't biometric-scan will be auto-marked absent.</li>

@@ -53,14 +53,13 @@ export default function SettingsPage() {
 
       <div className="grid-2" style={{ gap: 'var(--space-6)', alignItems: 'start' }}>
         {/* Tab Navigation */}
-        <div className="card-glass" style={{ gridColumn: 'span 2' }}>
-          <div style={{ display: 'flex', gap: 'var(--space-2)', borderBottom: '1px solid var(--border-color)', paddingBottom: 'var(--space-3)' }}>
+        <div className="card-glass settings-tab-card" style={{ gridColumn: 'span 2' }}>
+          <div className="settings-tabs-row">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`btn ${activeTab === tab.id ? 'btn-primary' : 'btn-ghost'}`}
-                style={{ borderRadius: 'var(--radius-md)' }}
               >
                 {tab.icon} {tab.label}
               </button>
@@ -71,46 +70,37 @@ export default function SettingsPage() {
         {/* Profile Tab */}
         {activeTab === 'profile' && (
           <div className="card-glass" style={{ gridColumn: 'span 2' }}>
-            <h2 style={{ fontSize: 'var(--font-lg)', marginBottom: 'var(--space-6)' }}>Profile Information</h2>
+            <h2 className="section-title">Profile Information</h2>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)', marginBottom: 'var(--space-8)' }}>
-              <div style={{
-                width: '80px', height: '80px', borderRadius: '0', /* No more circles */
-                background: 'linear-gradient(135deg, #111, #000)',
-                border: '1px solid var(--accent)',
-                boxShadow: '0 0 15px rgba(204, 255, 0, 0.1) inset, 0 0 10px rgba(204, 255, 0, 0.2)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 'var(--font-3xl)', fontWeight: 900, color: 'var(--accent)',
-                fontFamily: 'monospace',
-                flexShrink: 0
-              }}>
+            <div className="settings-profile-hero">
+              <div className="profile-avatar-large">
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
-              <div>
-                <h3 style={{ fontSize: 'var(--font-xl)', marginBottom: 'var(--space-1)' }}>{user?.name}</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-sm)' }}>{user?.email}</p>
-                <span className="badge badge-accent" style={{ marginTop: 'var(--space-2)', display: 'inline-block' }}>
+              <div className="profile-identity-block">
+                <h3>{user?.name}</h3>
+                <p>{user?.email}</p>
+                <span className="badge badge-accent profile-role-chip">
                   {user?.role}
                 </span>
               </div>
             </div>
 
-            <div className="grid-2" style={{ gap: 'var(--space-4)' }}>
-              <div style={{ padding: 'var(--space-4)', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-1)' }}>Full Name</div>
-                <div style={{ fontWeight: 600 }}>{user?.name}</div>
+            <div className="grid-2 settings-meta-grid" style={{ gap: 'var(--space-4)' }}>
+              <div className="settings-meta-card">
+                <div className="settings-meta-label">Full Name</div>
+                <div className="settings-meta-value">{user?.name}</div>
               </div>
-              <div style={{ padding: 'var(--space-4)', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-1)' }}>Email Address</div>
-                <div style={{ fontWeight: 600 }}>{user?.email}</div>
+              <div className="settings-meta-card">
+                <div className="settings-meta-label">Email Address</div>
+                <div className="settings-meta-value">{user?.email}</div>
               </div>
-              <div style={{ padding: 'var(--space-4)', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-1)' }}>Role</div>
-                <div style={{ fontWeight: 600 }}>{user?.role}</div>
+              <div className="settings-meta-card">
+                <div className="settings-meta-label">Role</div>
+                <div className="settings-meta-value">{user?.role}</div>
               </div>
-              <div style={{ padding: 'var(--space-4)', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-1)' }}>Account ID</div>
-                <div style={{ fontWeight: 600, fontSize: 'var(--font-xs)', fontFamily: 'monospace' }}>{user?._id || user?.id || '—'}</div>
+              <div className="settings-meta-card">
+                <div className="settings-meta-label">Account ID</div>
+                <div className="settings-meta-value mono">{user?._id || user?.id || '—'}</div>
               </div>
             </div>
           </div>
@@ -119,9 +109,9 @@ export default function SettingsPage() {
         {/* Security Tab */}
         {activeTab === 'security' && (
           <div className="card-glass" style={{ gridColumn: 'span 2', maxWidth: '500px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
+            <div className="section-title-row">
               <FiShield size={20} color="var(--accent)" />
-              <h2 style={{ fontSize: 'var(--font-lg)' }}>Change Password</h2>
+              <h2 className="section-title">Change Password</h2>
             </div>
             
             <form className="auth-form" onSubmit={handlePasswordChange}>
@@ -166,7 +156,7 @@ export default function SettingsPage() {
               </button>
             </form>
 
-            <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', marginTop: 'var(--space-4)' }}>
+            <p className="text-muted" style={{ marginTop: 'var(--space-4)' }}>
               Note: Password change requires a valid backend endpoint. If it fails, the endpoint may not be implemented yet on the server.
             </p>
           </div>

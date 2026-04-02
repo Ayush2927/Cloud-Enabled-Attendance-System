@@ -130,27 +130,27 @@ export default function AttendancePage() {
 
     return (
         <div className="page animate-fade-in">
-            <div className="page-header" style={{ textAlign: 'center' }}>
+            <div className="page-header text-center">
                 <h1 className="page-title">Biometric Verification</h1>
                 <p className="page-subtitle">Verify your identity to lock in your attendance.</p>
             </div>
 
-            <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-                <div className="card-glass" style={{ marginBottom: 'var(--space-6)', textAlign: 'center' }}>
-                    <div style={{ padding: 'var(--space-3)', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-6)' }}>
-                        <strong>System Status:</strong> <span style={{ color: isModelsLoaded ? 'var(--success)' : 'var(--warning)' }}>{status}</span>
+            <div className="attendance-shell">
+                <div className="card-glass page-section text-center">
+                    <div className="status-panel">
+                        <strong>System Status:</strong> <span className={isModelsLoaded ? 'status-success' : 'status-warning'}>{status}</span>
                     </div>
 
-                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                    <div className="page-section-sm">
                         <WebcamCapture onCapture={handleCapture} isLoading={isLoading || !isModelsLoaded} />
                     </div>
 
-                    <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }}>
+                    <p className="text-muted">
                         Look directly into the camera. Ensure you are well-lit and not wearing heavy accessories.
                     </p>
                 </div>
 
-                <div style={{ textAlign: 'center' }}>
+                <div className="text-center">
                     <button className="btn btn-ghost" onClick={() => navigate('/student')} disabled={isLoading}>
                         Cancel & Return
                     </button>

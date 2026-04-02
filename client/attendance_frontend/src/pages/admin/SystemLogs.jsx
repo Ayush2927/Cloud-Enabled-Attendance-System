@@ -46,14 +46,14 @@ export default function SystemLogs() {
           <tbody>
             {logs.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: 'var(--space-8)' }}>No system logs recorded yet.</td>
+                <td colSpan="6" className="table-empty-cell">No system logs recorded yet.</td>
               </tr>
             ) : (
               logs.map((log) => (
                 <tr key={log._id}>
                   <td>{log.dateIST}</td>
-                  <td style={{ fontWeight: 600 }}>{log.user?.name} <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', display: 'block' }}>{log.user?.email}</span></td>
-                  <td>{log.subject?.name} <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)' }}>(Div {log.lecture?.division})</span></td>
+                  <td className="table-main-cell">{log.user?.name} <span className="table-subtext">{log.user?.email}</span></td>
+                  <td>{log.subject?.name} <span className="table-inline-subtext">(Div {log.lecture?.division})</span></td>
                   <td>
                     <span className={`badge ${log.status === 'Present' ? 'badge-success' : 'badge-danger'}`}>
                       {log.status}
@@ -61,12 +61,12 @@ export default function SystemLogs() {
                   </td>
                   <td>
                     {log.status === 'Present' ? (
-                      log.hasFaceProof ? <span style={{ color: 'var(--success)' }}>✅ Captured</span> : <span style={{ color: 'var(--warning)' }}>⚠️ Missing</span>
+                      log.hasFaceProof ? <span className="proof-ok">Captured</span> : <span className="proof-missing">Missing</span>
                     ) : (
-                      <span style={{ color: 'var(--text-muted)' }}>N/A</span>
+                      <span className="proof-na">N/A</span>
                     )}
                   </td>
-                  <td style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-sm)' }}>{log.checkOutIST}</td>
+                  <td className="table-muted-cell">{log.checkOutIST}</td>
                 </tr>
               ))
             )}

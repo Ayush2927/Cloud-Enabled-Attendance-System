@@ -35,22 +35,22 @@ export default function MyStats() {
         <p className="page-subtitle">Detailed breakdown of your attendance across all registered courses.</p>
       </div>
 
-      <div className="grid-3" style={{ marginBottom: 'var(--space-8)' }}>
+      <div className="grid-3 page-section-lg">
         <div className="card-glass">
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-sm)', textTransform: 'uppercase' }}>Overall Attendance</h3>
-          <div style={{ fontSize: 'var(--font-4xl)', fontWeight: 800, marginTop: 'var(--space-2)', color: overallPercentage >= 75 ? 'var(--success)' : 'var(--danger)' }}>
+          <h3 className="stat-heading">Overall Attendance</h3>
+          <div className="stat-value-xl" style={{ color: overallPercentage >= 75 ? 'var(--success)' : 'var(--danger)' }}>
             {overallPercentage}%
           </div>
         </div>
         <div className="card-glass">
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-sm)', textTransform: 'uppercase' }}>Courses At Risk</h3>
-          <div style={{ fontSize: 'var(--font-4xl)', fontWeight: 800, marginTop: 'var(--space-2)', color: 'var(--warning)' }}>
+          <h3 className="stat-heading">Courses At Risk</h3>
+          <div className="stat-value-xl" style={{ color: 'var(--warning)' }}>
             {stats.filter(s => s.status === 'at-risk').length}
           </div>
         </div>
         <div className="card-glass">
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-sm)', textTransform: 'uppercase' }}>Total Lectures</h3>
-          <div style={{ fontSize: 'var(--font-4xl)', fontWeight: 800, marginTop: 'var(--space-2)' }}>
+          <h3 className="stat-heading">Total Lectures</h3>
+          <div className="stat-value-xl">
             {stats.reduce((acc, curr) => acc + curr.total, 0)}
           </div>
         </div>
@@ -71,19 +71,19 @@ export default function MyStats() {
           <tbody>
             {stats.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: 'var(--space-8)' }}>No attendance records found yet.</td>
+                <td colSpan="6" className="table-empty-cell">No attendance records found yet.</td>
               </tr>
             ) : (
               stats.map((stat) => (
                 <tr key={stat.subjectId}>
-                  <td style={{ fontWeight: 600 }}>{stat.subjectCode}</td>
+                  <td className="table-main-cell">{stat.subjectCode}</td>
                   <td>{stat.subjectName}</td>
                   <td>{stat.attended}</td>
                   <td>{stat.total}</td>
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                      <span style={{ width: '40px' }}>{stat.percentage}%</span>
-                      <div className="progress-bar" style={{ flex: 1 }}>
+                    <div className="progress-row">
+                      <span className="progress-value">{stat.percentage}%</span>
+                      <div className="progress-bar flex-1">
                         <div 
                           className={`progress-fill ${stat.percentage >= 75 ? 'progress-safe' : 'progress-risk'}`} 
                           style={{ width: `${stat.percentage}%` }}

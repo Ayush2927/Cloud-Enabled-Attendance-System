@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiMenu, FiBell, FiUser, FiSettings, FiLogOut, FiChevronDown } from 'react-icons/fi';
+import { FiMenu, FiBell, FiSettings, FiLogOut, FiChevronDown } from 'react-icons/fi';
 
 export default function Navbar({ onToggleSidebar }) {
   const { user, logout } = useAuth();
@@ -32,19 +32,8 @@ export default function Navbar({ onToggleSidebar }) {
   };
 
   return (
-    <header style={{
-      height: 'var(--navbar-height)',
-      background: 'var(--bg-card)',
-      borderBottom: '1px solid var(--border-color)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 var(--space-6)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 50
-    }}>
-      <div className="flex items-center gap-4">
+    <header className="navbar">
+      <div className="navbar-left">
         <button
           className="btn-icon"
           onClick={onToggleSidebar}
@@ -53,14 +42,14 @@ export default function Navbar({ onToggleSidebar }) {
         >
           <FiMenu size={20} />
         </button>
-        <Link to="/" style={{ color: 'var(--accent)', fontWeight: 800, fontSize: 'var(--font-xl)', letterSpacing: '-0.02em' }}>
+        <Link to="/" className="brand-mark">
           AttendEase
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="navbar-actions">
         {/* Notification Bell */}
-        <div ref={notifRef} style={{ position: 'relative' }}>
+        <div ref={notifRef} className="nav-dropdown-wrapper">
           <button
             className="btn-icon"
             onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
@@ -71,14 +60,14 @@ export default function Navbar({ onToggleSidebar }) {
           </button>
 
           {showNotifications && (
-            <div className="dropdown-menu" style={{ right: 0, minWidth: '300px' }}>
-              <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--border-color)' }}>
-                <h4 style={{ fontSize: 'var(--font-sm)', fontWeight: 600 }}>Notifications</h4>
+            <div className="dropdown-menu notifications-menu">
+              <div className="dropdown-header">
+                <h4>Notifications</h4>
               </div>
-              <div style={{ padding: 'var(--space-6) var(--space-4)', textAlign: 'center' }}>
-                <FiBell size={28} color="var(--text-muted)" style={{ margin: '0 auto var(--space-2)' }} />
-                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }}>No new notifications</p>
-                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-xs)', marginTop: 'var(--space-1)' }}>
+              <div className="dropdown-empty-state">
+                <FiBell size={28} />
+                <p>No new notifications</p>
+                <p className="subtle-text">
                   You're all caught up!
                 </p>
               </div>
@@ -87,35 +76,28 @@ export default function Navbar({ onToggleSidebar }) {
         </div>
 
         {/* Profile Dropdown */}
-        <div ref={profileRef} style={{ position: 'relative' }}>
+        <div ref={profileRef} className="nav-dropdown-wrapper">
           <button
-            className="flex items-center gap-3"
+            className="profile-trigger"
             onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifications(false); }}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-md)', transition: 'background var(--transition-fast)' }}
             aria-label="Profile menu"
             id="profile-menu-btn"
           >
-            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--text-primary)' }}>{user?.name}</span>
-              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)' }}>{user?.role}</span>
+            <div className="profile-meta">
+              <span>{user?.name}</span>
+              <span>{user?.role}</span>
             </div>
-            <div style={{
-              width: '36px', height: '36px', borderRadius: '0', 
-              background: '#0a0a0a',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '1px solid var(--accent)', color: 'var(--accent)', fontWeight: 900, fontSize: 'var(--font-sm)',
-              boxShadow: '0 0 10px rgba(204, 255, 0, 0.2)'
-            }}>
+            <div className="avatar-chip">
               {user?.name?.charAt(0)?.toUpperCase()}
             </div>
-            <FiChevronDown size={14} color="var(--text-muted)" style={{ transition: 'transform var(--transition-fast)', transform: showProfileMenu ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            <FiChevronDown className={showProfileMenu ? 'caret-open' : ''} size={14} />
           </button>
 
           {showProfileMenu && (
-            <div className="dropdown-menu" style={{ right: 0, minWidth: '200px' }}>
-              <div style={{ padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600 }}>{user?.name}</div>
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)' }}>{user?.email}</div>
+            <div className="dropdown-menu profile-menu">
+              <div className="dropdown-header">
+                <div className="profile-name">{user?.name}</div>
+                <div className="subtle-text">{user?.email}</div>
               </div>
               <button
                 className="dropdown-item"
@@ -123,11 +105,10 @@ export default function Navbar({ onToggleSidebar }) {
               >
                 <FiSettings size={16} /> Settings
               </button>
-              <div style={{ borderTop: '1px solid var(--border-color)' }}>
+              <div className="dropdown-divider">
                 <button
-                  className="dropdown-item"
+                  className="dropdown-item danger-item"
                   onClick={handleLogout}
-                  style={{ color: 'var(--danger)' }}
                 >
                   <FiLogOut size={16} /> Logout
                 </button>

@@ -80,11 +80,11 @@ export default function ManageLectures() {
         <p className="page-subtitle">Master schedule planning interface. Assign instructors dynamically.</p>
       </div>
 
-      <div className="grid-2" style={{ gap: 'var(--space-6)', alignItems: 'start' }}>
+      <div className="grid-2 page-grid-top">
         
         {/* Creator Panel */}
         <div className="card-glass">
-          <h2 style={{ fontSize: 'var(--font-lg)', marginBottom: 'var(--space-4)' }}>Schedule New Subject Session</h2>
+          <h2 className="section-title">Schedule New Subject Session</h2>
           <form className="auth-form grid-2" onSubmit={handleCreate}>
             
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
@@ -102,7 +102,7 @@ export default function ManageLectures() {
                 {teachers.map(t => <option key={t._id} value={t._id}>{t.name} ({t.email})</option>)}
               </select>
               {teachers.length === 0 && (
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--danger)', marginTop: '4px' }}>
+                <div className="input-warning-text">
                   No teachers found. You must register a Teacher account before scheduling.
                 </div>
               )}
@@ -131,25 +131,25 @@ export default function ManageLectures() {
               <input type="time" className="form-input" value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} required />
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ gridColumn: 'span 2' }}>Publish to Timetable</button>
+            <button type="submit" className="btn btn-primary span-2">Publish to Timetable</button>
           </form>
         </div>
 
         {/* Global Timetable */}
-        <div className="card-glass flex" style={{ flexDirection: 'column', gap: 'var(--space-3)' }}>
-          <h2 style={{ fontSize: 'var(--font-lg)', marginBottom: 'var(--space-2)' }}>Master System Timetable</h2>
+        <div className="card-glass stack-sm">
+          <h2 className="section-title-sm">Master System Timetable</h2>
           {isLoading ? <p>Pulling system timetable...</p> : lectures.length === 0 ? <p className="text-muted">No scheduled infrastructure found.</p> : (
             lectures.map(lec => (
-              <div key={lec._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-3)', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', borderLeft: `3px solid ${lec.sessionStatus === 'Ended' ? 'var(--text-muted)' : 'var(--accent)'}` }}>
+              <div key={lec._id} className="list-item" style={{ borderLeftColor: lec.sessionStatus === 'Ended' ? 'var(--text-muted)' : 'var(--accent)' }}>
                 <div>
-                  <div style={{ fontWeight: 600 }}>{lec.subject?.name} <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', fontWeight: 400 }}>(Div {lec.division})</span></div>
-                  <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)' }}>
+                  <div className="list-item-title">{lec.subject?.name} <span className="list-item-subtle">(Div {lec.division})</span></div>
+                  <div className="list-item-subtitle">
                     {lec.date.substring(0, 10)} | {lec.startTime} - {lec.endTime}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                <div className="row-actions">
                   <span className={`badge ${lec.sessionStatus === 'Active' ? 'badge-success' : 'badge-warning'}`}>{lec.sessionStatus}</span>
-                  <button onClick={() => handleDelete(lec._id)} className="btn-icon" style={{ color: 'var(--danger)', background: 'transparent', border: 'none' }}>
+                  <button onClick={() => handleDelete(lec._id)} className="btn-icon row-delete-btn">
                     <FiTrash2 />
                   </button>
                 </div>

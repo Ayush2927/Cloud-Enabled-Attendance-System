@@ -30,17 +30,16 @@ export default function StudentDashboard() {
 
   return (
     <div className="page animate-fade-in">
-      <div className="page-header flex justify-between items-center" style={{ flexWrap: 'wrap', gap: 'var(--space-4)' }}>
+      <div className="page-header page-header-row">
         <div>
           <h1 className="page-title">Welcome back, {user?.name.split(' ')[0]} 👋</h1>
           <p className="page-subtitle">Here is your timeline for today.</p>
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+        <div className="filter-row">
           <span className="form-label mb-0">Division:</span>
           <select 
-            className="form-select" 
-            style={{ width: 'auto', minWidth: '120px' }}
+            className="form-select form-select-inline"
             value={division} 
             onChange={e => setDivision(e.target.value)}
           >
@@ -51,11 +50,11 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <h2 style={{ fontSize: 'var(--font-xl)', marginBottom: 'var(--space-4)' }}>Today's Lectures</h2>
+      <div className="page-section">
+        <h2 className="section-title">Today's Lectures</h2>
         
         {isLoading ? (
-          <div className="card-glass animate-pulse" style={{ height: '150px' }}></div>
+          <div className="card-glass animate-pulse skeleton-card"></div>
         ) : lectures.length === 0 ? (
           <div className="card-glass empty-state">
             <h3>No lectures scheduled</h3>
@@ -64,40 +63,38 @@ export default function StudentDashboard() {
         ) : (
           <div className="grid-3">
             {lectures.map((lecture) => (
-              <div key={lecture._id} className="card-glass" style={{ display: 'flex', flexDirection: 'column' }}>
-                <div className="flex justify-between items-center" style={{ marginBottom: 'var(--space-4)' }}>
+              <div key={lecture._id} className="card-glass card-col">
+                <div className="card-row-between mb-md">
                   <span className={`badge ${
                     lecture.sessionStatus === 'Active' ? 'badge-success' : 
                     lecture.sessionStatus === 'Ended' ? 'badge-info' : 'badge-warning'
                   }`}>
                     {lecture.sessionStatus}
                   </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }}>
+                  <div className="meta-inline">
                     <FiClock /> {lecture.startTime} - {lecture.endTime}
                   </div>
                 </div>
 
-                <h3 style={{ fontSize: 'var(--font-lg)', marginBottom: 'var(--space-1)' }}>
+                <h3 className="card-title-sm">
                   {lecture.subject.name}
                 </h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--font-sm)', marginBottom: 'var(--space-6)' }}>
+                <p className="card-subtitle mb-lg">
                   Prof. {lecture.teacher.name} • Div {lecture.division}
                 </p>
 
-                <div style={{ marginTop: 'auto' }}>
+                <div className="card-footer-auto">
                   {lecture.sessionStatus === 'Active' ? (
                     <button 
                       onClick={() => navigate(`/student/mark-attendance/${lecture._id}`)}
-                      className="btn btn-primary" 
-                      style={{ width: '100%' }}
+                      className="btn btn-primary w-full"
                     >
                       <FiCheckSquare /> Mark Present Now
                     </button>
                   ) : (
                     <button 
                       disabled
-                      className="btn btn-secondary" 
-                      style={{ width: '100%', opacity: 0.5, cursor: 'not-allowed' }}
+                      className="btn btn-secondary w-full"
                     >
                       {lecture.sessionStatus === 'Scheduled' ? 'Waiting to Start' : 'Session Ended'}
                     </button>

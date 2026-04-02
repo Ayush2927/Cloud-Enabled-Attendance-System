@@ -41,10 +41,10 @@ export default function ManageSubjects() {
         <p className="page-subtitle">Create organizational course curricula and assign registered teachers.</p>
       </div>
 
-      <div className="grid-2" style={{ gap: 'var(--space-6)', alignItems: 'start' }}>
+      <div className="grid-2 page-grid-top">
         {/* Create Form */}
         <div className="card-glass">
-          <h2 style={{ fontSize: 'var(--font-lg)', marginBottom: 'var(--space-4)' }}>Create New Subject</h2>
+          <h2 className="section-title">Create New Subject</h2>
           <form className="auth-form" onSubmit={handleCreate}>
             <div className="form-group">
               <label className="form-label">Subject Code</label>
@@ -58,21 +58,21 @@ export default function ManageSubjects() {
               <label className="form-label">Semester</label>
               <input type="number" className="form-input" min="1" max="8" value={newSubject.semester} onChange={e => setNewSubject({...newSubject, semester: e.target.value})} required />
             </div>
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Create Subject</button>
+            <button type="submit" className="btn btn-primary w-full">Create Subject</button>
           </form>
         </div>
 
         {/* Course List */}
-        <div className="card-glass flex" style={{ flexDirection: 'column', gap: 'var(--space-3)' }}>
-          <h2 style={{ fontSize: 'var(--font-lg)', marginBottom: 'var(--space-2)' }}>Active Subjects</h2>
+        <div className="card-glass stack-sm">
+          <h2 className="section-title-sm">Active Subjects</h2>
           {isLoading ? <p>Loading...</p> : subjects.length === 0 ? <p className="text-muted">No subjects exist.</p> : (
             subjects.map(sub => (
-              <div key={sub._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-3)', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)' }}>
+              <div key={sub._id} className="list-item">
                 <div>
-                  <div style={{ fontWeight: 600 }}>{sub.name}</div>
-                  <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)' }}>{sub.code} • Sem {sub.semester}</div>
+                  <div className="list-item-title">{sub.name}</div>
+                  <div className="list-item-subtitle">{sub.code} • Sem {sub.semester}</div>
                 </div>
-                <div style={{ fontSize: 'var(--font-sm)', color: 'var(--accent)' }}>
+                <div className="list-item-accent">
                   {sub.teachers?.length || 0} Teachers
                 </div>
               </div>
