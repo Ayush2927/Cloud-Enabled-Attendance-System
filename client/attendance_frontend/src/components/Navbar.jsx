@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiMenu, FiBell, FiUser, FiSettings, FiLogOut, FiChevronDown } from 'react-icons/fi';
+import { Menu, Bell, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar({ onToggleSidebar }) {
   const { user, logout } = useAuth();
@@ -11,7 +12,6 @@ export default function Navbar({ onToggleSidebar }) {
   const notifRef = useRef(null);
   const profileRef = useRef(null);
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target)) {
@@ -31,108 +31,101 @@ export default function Navbar({ onToggleSidebar }) {
     navigate('/login');
   };
 
+  const dropdownVariants = {
+    hidden: { opacity: 0, y: -10, scale: 0.95 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 300, damping: 24 } },
+    exit: { opacity: 0, y: -10, scale: 0.95, transition: { duration: 0.15 } }
+  };
+
   return (
-    <header style={{
-      height: 'var(--navbar-height)',
-      background: 'var(--bg-card)',
-      borderBottom: '1px solid var(--border-color)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 var(--space-6)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 50
-    }}>
+    <header className="sticky top-0 z-50 flex h-[70px] items-center justify-between border-b border-white/5 bg-black/50 backdrop-blur-2xl px-6">
       <div className="flex items-center gap-4">
         <button
-          className="btn-icon"
+          className="p-2 rounded-full hover:bg-white/10 text-white transition-colors"
           onClick={onToggleSidebar}
           aria-label="Toggle sidebar menu"
-          id="sidebar-toggle-btn"
         >
-          <FiMenu size={20} />
+          <Menu size={20} />
         </button>
-        <Link to="/" style={{ color: 'var(--accent)', fontWeight: 800, fontSize: 'var(--font-xl)', letterSpacing: '-0.02em' }}>
+        <Link to="/" className="text-xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">
           AttendEase
         </Link>
       </div>
 
       <div className="flex items-center gap-4">
         {/* Notification Bell */}
-        <div ref={notifRef} style={{ position: 'relative' }}>
+        <div ref={notifRef} className="relative">
           <button
-            className="btn-icon"
+            className="p-2.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-white transition-colors relative"
             onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
-            aria-label="View notifications"
-            id="notification-bell-btn"
           >
-            <FiBell size={20} />
+            <Bell size={20} />
+            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-cyan-400 animate-pulse border border-black" />
           </button>
 
-          {showNotifications && (
-            <div className="dropdown-menu" style={{ right: 0, minWidth: '300px' }}>
-              <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--border-color)' }}>
-                <h4 style={{ fontSize: 'var(--font-sm)', fontWeight: 600 }}>Notifications</h4>
-              </div>
-              <div style={{ padding: 'var(--space-6) var(--space-4)', textAlign: 'center' }}>
-                <FiBell size={28} color="var(--text-muted)" style={{ margin: '0 auto var(--space-2)' }} />
-                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }}>No new notifications</p>
-                <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-xs)', marginTop: 'var(--space-1)' }}>
-                  You're all caught up!
-                </p>
-              </div>
-            </div>
-          )}
+          <AnimatePresence>
+            {showNotifications && (
+              <motion.div 
+                variants={dropdownVariants} initial="hidden" animate="visible" exit="exit"
+                className="absolute right-0 mt-2 w-80 rounded-2xl border border-white/10 bg-slate-950/90 backdrop-blur-3xl p-2 shadow-2xl shadow-black ring-1 ring-white/5"
+              >
+                <div className="px-4 py-3 border-b border-white/5">
+                  <h4 className="text-sm font-bold text-white">Notifications</h4>
+                </div>
+                <div className="px-4 py-8 text-center flex flex-col items-center">
+                  <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center mb-3">
+                    <Bell size={24} className="text-slate-500" />
+                  </div>
+                  <p className="text-slate-300 text-sm font-medium">System Matrix Clear</p>
+                  <p className="text-slate-500 text-xs mt-1">No pending anomalies detected.</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Profile Dropdown */}
-        <div ref={profileRef} style={{ position: 'relative' }}>
+        <div ref={profileRef} className="relative">
           <button
-            className="flex items-center gap-3"
+            className="flex items-center gap-3 p-1.5 pl-3 rounded-full hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
             onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifications(false); }}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 'var(--space-1) var(--space-2)', borderRadius: 'var(--radius-md)', transition: 'background var(--transition-fast)' }}
-            aria-label="Profile menu"
-            id="profile-menu-btn"
           >
-            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--text-primary)' }}>{user?.name}</span>
-              <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)' }}>{user?.role}</span>
+            <div className="hidden sm:flex flex-col text-right">
+              <span className="text-sm font-semibold text-white leading-tight">{user?.name}</span>
+              <span className="text-xs text-cyan-400/80 font-medium">{user?.role}</span>
             </div>
-            <div style={{
-              width: '36px', height: '36px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px solid var(--accent)', color: 'white', fontWeight: 700, fontSize: 'var(--font-sm)'
-            }}>
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-emerald-400 text-sm font-bold text-black shadow-inner">
               {user?.name?.charAt(0)?.toUpperCase()}
             </div>
-            <FiChevronDown size={14} color="var(--text-muted)" style={{ transition: 'transform var(--transition-fast)', transform: showProfileMenu ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            <ChevronDown size={14} className={`text-slate-400 transition-transform duration-300 ${showProfileMenu ? 'rotate-180' : ''}`} />
           </button>
 
-          {showProfileMenu && (
-            <div className="dropdown-menu" style={{ right: 0, minWidth: '200px' }}>
-              <div style={{ padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: 'var(--font-sm)', fontWeight: 600 }}>{user?.name}</div>
-                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)' }}>{user?.email}</div>
-              </div>
-              <button
-                className="dropdown-item"
-                onClick={() => { setShowProfileMenu(false); navigate('/settings'); }}
+          <AnimatePresence>
+            {showProfileMenu && (
+              <motion.div 
+                variants={dropdownVariants} initial="hidden" animate="visible" exit="exit"
+                className="absolute right-0 mt-2 w-56 rounded-2xl border border-white/10 bg-slate-950/90 backdrop-blur-3xl p-1.5 shadow-2xl shadow-black ring-1 ring-white/5"
               >
-                <FiSettings size={16} /> Settings
-              </button>
-              <div style={{ borderTop: '1px solid var(--border-color)' }}>
+                <div className="px-3 py-3 border-b border-white/5 mb-1 bg-white/[0.02] rounded-t-xl">
+                  <div className="text-sm font-bold text-white">{user?.name}</div>
+                  <div className="text-xs text-slate-400 truncate">{user?.email}</div>
+                </div>
                 <button
-                  className="dropdown-item"
-                  onClick={handleLogout}
-                  style={{ color: 'var(--danger)' }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                  onClick={() => { setShowProfileMenu(false); navigate('/settings'); }}
                 >
-                  <FiLogOut size={16} /> Logout
+                  <Settings size={16} /> User Config
                 </button>
-              </div>
-            </div>
-          )}
+                <div className="my-1 border-t border-white/5" />
+                <button
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors"
+                  onClick={handleLogout}
+                >
+                  <LogOut size={16} /> Disconnect
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </header>
