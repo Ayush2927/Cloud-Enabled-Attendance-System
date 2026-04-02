@@ -4,6 +4,8 @@ import * as faceapi from 'face-api.js';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import WebcamCapture from '../components/WebcamCapture';
+import { FiHome, FiCheckSquare, FiPieChart, FiSettings } from 'react-icons/fi';
+import FeatureHub from '../components/ui/FeatureHub';
 
 // Utility to load AI Models
 const loadModels = async () => {
@@ -27,6 +29,13 @@ export default function AttendancePage() {
     const [status, setStatus] = useState('Initializing AI...');
     const [isModelsLoaded, setIsModelsLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+        const studentFeatures = [
+            { id: 'student-home', title: 'Dashboard', description: 'Return to your lecture timeline.', icon: <FiHome size={18} />, onClick: () => navigate('/student') },
+            { id: 'student-attendance', title: 'Mark Attendance', description: 'Continue biometric attendance capture.', icon: <FiCheckSquare size={18} />, onClick: () => navigate(`/student/mark-attendance/${lectureId || ''}`) },
+            { id: 'student-stats', title: 'My Stats', description: 'Check your attendance performance and risks.', icon: <FiPieChart size={18} />, onClick: () => navigate('/student/stats') },
+            { id: 'student-settings', title: 'Settings', description: 'Update account and security preferences.', icon: <FiSettings size={18} />, onClick: () => navigate('/settings') }
+        ];
 
     useEffect(() => {
         if (!lectureId) {
@@ -155,6 +164,8 @@ export default function AttendancePage() {
                         Cancel & Return
                     </button>
                 </div>
+
+                <FeatureHub title="Student Features" items={studentFeatures} />
             </div>
         </div>
     );

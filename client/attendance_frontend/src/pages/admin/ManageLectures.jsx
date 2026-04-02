@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiTrash2, FiHome, FiBook, FiClock, FiUsers, FiSettings } from 'react-icons/fi';
+import FeatureHub from '../../components/ui/FeatureHub';
 
 export default function ManageLectures() {
+  const navigate = useNavigate();
   const [lectures, setLectures] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -18,6 +21,14 @@ export default function ManageLectures() {
     endTime: '10:00',
     division: 'SE-A'
   });
+
+  const adminFeatures = [
+    { id: 'admin-home', title: 'Admin Dashboard', description: 'Return to the system control center.', icon: <FiHome size={18} />, onClick: () => navigate('/admin') },
+    { id: 'admin-subjects', title: 'Manage Subjects', description: 'Create subjects and review teacher assignments.', icon: <FiBook size={18} />, onClick: () => navigate('/admin/subjects') },
+    { id: 'admin-lectures', title: 'Manage Lectures', description: 'Build the timetable and assign instructors.', icon: <FiClock size={18} />, onClick: () => navigate('/admin/lectures') },
+    { id: 'admin-logs', title: 'System Logs', description: 'Inspect attendance and biometric activity.', icon: <FiUsers size={18} />, onClick: () => navigate('/admin/logs') },
+    { id: 'admin-settings', title: 'Settings', description: 'Adjust security and account preferences.', icon: <FiSettings size={18} />, onClick: () => navigate('/settings') }
+  ];
 
   const fetchData = async () => {
     try {
@@ -159,6 +170,8 @@ export default function ManageLectures() {
         </div>
 
       </div>
+
+      <FeatureHub title="Admin Features" items={adminFeatures} />
     </div>
   );
 }

@@ -1,10 +1,21 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { FiHome, FiCheckSquare, FiPieChart, FiSettings } from 'react-icons/fi';
+import FeatureHub from '../../components/ui/FeatureHub';
 
 export default function MyStats() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const studentFeatures = [
+    { id: 'student-home', title: 'Dashboard', description: 'Open your live class timeline and session status.', icon: <FiHome size={18} />, onClick: () => navigate('/student') },
+    { id: 'student-attendance', title: 'Mark Attendance', description: 'Launch biometric verification for the active lecture.', icon: <FiCheckSquare size={18} />, onClick: () => navigate('/student/mark-attendance') },
+    { id: 'student-stats', title: 'My Stats', description: 'View your attendance summary and risk status.', icon: <FiPieChart size={18} />, onClick: () => navigate('/student/stats') },
+    { id: 'student-settings', title: 'Settings', description: 'Manage account and password preferences.', icon: <FiSettings size={18} />, onClick: () => navigate('/settings') }
+  ];
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -102,6 +113,8 @@ export default function MyStats() {
           </tbody>
         </table>
       </div>
+
+      <FeatureHub title="Student Features" items={studentFeatures} />
     </div>
   );
 }
