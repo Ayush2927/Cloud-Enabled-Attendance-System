@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { FiClock, FiCheckSquare } from 'react-icons/fi';
+import { FiClock, FiCheckSquare, FiPieChart, FiSettings, FiHome } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import FeatureHub from '../../components/ui/FeatureHub';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -11,6 +12,37 @@ export default function StudentDashboard() {
   const [division, setDivision] = useState('SE-B'); // Placeholder default
   const [lectures, setLectures] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const studentFeatures = [
+    {
+      id: 'student-home',
+      title: 'Dashboard',
+      description: 'Open your live class timeline and session status.',
+      icon: <FiHome size={18} />,
+      onClick: () => navigate('/student')
+    },
+    {
+      id: 'student-attendance',
+      title: 'Mark Attendance',
+      description: 'Launch biometric verification for the active lecture.',
+      icon: <FiCheckSquare size={18} />,
+      onClick: () => navigate('/student/mark-attendance')
+    },
+    {
+      id: 'student-stats',
+      title: 'My Stats',
+      description: 'Track attendance percentages and at-risk subjects.',
+      icon: <FiPieChart size={18} />,
+      onClick: () => navigate('/student/stats')
+    },
+    {
+      id: 'student-settings',
+      title: 'Settings',
+      description: 'Manage account and password preferences.',
+      icon: <FiSettings size={18} />,
+      onClick: () => navigate('/settings')
+    }
+  ];
 
   // Fetch today's lectures for the selected/default division
   useEffect(() => {
@@ -105,6 +137,8 @@ export default function StudentDashboard() {
           </div>
         )}
       </div>
+
+      <FeatureHub title="Student Features" items={studentFeatures} />
     </div>
   );
 }

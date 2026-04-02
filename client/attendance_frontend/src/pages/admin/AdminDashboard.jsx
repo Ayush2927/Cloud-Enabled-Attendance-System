@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiUsers, FiBook, FiClock, FiActivity, FiArrowRight } from 'react-icons/fi';
+import { FiUsers, FiBook, FiClock, FiActivity, FiArrowRight, FiHome, FiSettings } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import FeatureHub from '../../components/ui/FeatureHub';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -57,6 +58,44 @@ export default function AdminDashboard() {
     { label: 'Attendance Logs', description: 'Audit biometric verification records', path: '/admin/logs', icon: <FiUsers size={20} /> },
   ];
 
+  const adminFeatures = [
+    {
+      id: 'admin-home',
+      title: 'Admin Dashboard',
+      description: 'Monitor global subjects, sessions, and system status.',
+      icon: <FiHome size={18} />,
+      onClick: () => navigate('/admin')
+    },
+    {
+      id: 'admin-subjects',
+      title: 'Manage Subjects',
+      description: 'Create subjects and assign/review teacher mappings.',
+      icon: <FiBook size={18} />,
+      onClick: () => navigate('/admin/subjects')
+    },
+    {
+      id: 'admin-lectures',
+      title: 'Manage Lectures',
+      description: 'Create timetable slots and maintain schedule integrity.',
+      icon: <FiClock size={18} />,
+      onClick: () => navigate('/admin/lectures')
+    },
+    {
+      id: 'admin-logs',
+      title: 'System Logs',
+      description: 'Review attendance logs and biometric verification history.',
+      icon: <FiUsers size={18} />,
+      onClick: () => navigate('/admin/logs')
+    },
+    {
+      id: 'admin-settings',
+      title: 'Settings',
+      description: 'Manage account-level preferences and security.',
+      icon: <FiSettings size={18} />,
+      onClick: () => navigate('/settings')
+    }
+  ];
+
   return (
     <div className="page animate-fade-in">
       <div className="page-header">
@@ -100,6 +139,8 @@ export default function AdminDashboard() {
           ))}
         </div>
       </div>
+
+      <FeatureHub title="Admin Features" items={adminFeatures} />
     </div>
   );
 }

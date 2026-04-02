@@ -1,13 +1,33 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { FiClock, FiUsers, FiPlayCircle, FiStopCircle } from 'react-icons/fi';
+import { FiClock, FiUsers, FiPlayCircle, FiStopCircle, FiHome, FiSettings } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import FeatureHub from '../../components/ui/FeatureHub';
 
 export default function TeacherDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [lectures, setLectures] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const teacherFeatures = [
+    {
+      id: 'teacher-home',
+      title: 'Dashboard & Sessions',
+      description: 'Manage scheduled sessions and attendance shifts.',
+      icon: <FiHome size={18} />,
+      onClick: () => navigate('/teacher')
+    },
+    {
+      id: 'teacher-settings',
+      title: 'Settings',
+      description: 'Update account security and profile preferences.',
+      icon: <FiSettings size={18} />,
+      onClick: () => navigate('/settings')
+    }
+  ];
 
   const fetchMyLectures = async () => {
     setIsLoading(true);
@@ -123,6 +143,8 @@ export default function TeacherDashboard() {
           </ul>
         </div>
       </div>
+
+      <FeatureHub title="Teacher Features" items={teacherFeatures} />
     </div>
   );
 }

@@ -375,6 +375,10 @@ textarea {
   margin-bottom: var(--space-5);
 }
 
+.sidebar-mobile-header {
+  display: none;
+}
+
 .sidebar-close {
   color: var(--text-muted);
 }
@@ -1013,6 +1017,10 @@ textarea:focus {
   align-items: center;
   gap: var(--space-4);
   cursor: pointer;
+}
+
+.feature-grid {
+  gap: var(--space-4);
 }
 
 .action-card:hover {

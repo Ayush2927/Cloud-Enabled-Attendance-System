@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { 
   FiHome, FiCheckSquare, FiPieChart, 
-  FiBook, FiUsers, FiClock, FiSettings, FiX 
+  FiBook, FiUsers, FiClock, FiSettings
 } from 'react-icons/fi';
 
 export default function Sidebar({ userRole, isOpen, onClose }) {
@@ -26,14 +26,6 @@ export default function Sidebar({ userRole, isOpen, onClose }) {
 
   return (
     <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
-      {/* Mobile close button */}
-      <div className="sidebar-mobile-header">
-        <div className="sidebar-logo">AttendEase</div>
-        <button className="btn-icon sidebar-close" onClick={onClose} aria-label="Close sidebar">
-          <FiX size={20} />
-        </button>
-      </div>
-
       <div className="sidebar-menu-label">
         Menu
       </div>
