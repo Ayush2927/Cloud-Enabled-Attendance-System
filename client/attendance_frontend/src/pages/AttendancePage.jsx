@@ -61,7 +61,7 @@ export default function AttendancePage() {
                     const img = new Image();
                     img.crossOrigin = 'Anonymous';
                     img.onload = () => resolve(img);
-                    img.onerror = reject;
+                    img.onerror = () => reject(new Error("Failed to load image for face detection."));
                     img.src = b64;
                 });
             };
@@ -129,7 +129,7 @@ export default function AttendancePage() {
                 toast.error('Biometric verification failed.');
             }
         } catch (err) {
-            const message = err.message || err.response?.data?.message || 'Verification Error';
+            const message = err.response?.data?.message || err.message || 'Verification Error';
             setStatus(`❌ Error: ${message}`);
             toast.error(message);
         } finally {
