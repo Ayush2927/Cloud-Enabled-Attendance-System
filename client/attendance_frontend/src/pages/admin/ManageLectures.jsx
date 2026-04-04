@@ -129,10 +129,7 @@ export default function ManageLectures() {
 
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
               <label className="form-label">Session Date</label>
-              <input type="date" className="form-input" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required />
-            </div>
-
-            <div className="form-group">
+                <input type="date" className="form-input" min={new Date().toISOString().split('T')[0]} value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required />              </div>            <div className="form-group">
               <label className="form-label">Starts At</label>
               <input type="time" className="form-input" value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} required />
             </div>

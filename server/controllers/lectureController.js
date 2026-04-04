@@ -13,7 +13,16 @@ const createLecture = asyncHandler(async (req, res) => {
     if (!subject || !teacher || !date || !division || !startTime || !endTime) {
         throw new ApiError(400, "subject, division, date, teacher, start time, end time — all fields are required");
     }
-
+    const today = getTodayDateString();
+    if (date < today) {
+        throw new ApiError(400, "Cannot schedule a lecture in the past");
+    }
+    if (date === today) {
+        const currentIstTime = new Date().toLocaleTimeString("en-GB", { timeZone: process.env.APP_TIMEZONE || "Asia/Kolkata", hour: '2-digit', minute: '2-digit' });
+        if (startTime < currentIstTime) {
+            throw new ApiError(400, "Cannot schedule a lecture before the current time today");
+        }
+    }
     const subjectDoc = await Subject.findById(subject);
     if (!subjectDoc) {
         throw new ApiError(404, "Subject not found");

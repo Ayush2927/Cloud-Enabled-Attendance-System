@@ -5,7 +5,8 @@ import {
     logTeacherShift,
     getAdminReports,
     getMyAttendanceStats,  // NEW — student percentage route
-    getStoredFace
+    getStoredFace,
+    getTeacherStudentStats
 } from "../controllers/attendanceController.js";
 
 import { verifyJwt } from "../middleware/auth.middleware.js";
@@ -54,6 +55,14 @@ router.route("/get-face").get(
     verifyJwt,
     authorizeRoles("Student"),
     getStoredFace
+);
+
+// Teacher fetches student stats by division
+// GET /api/v1/attendance/teacher/division-stats
+router.route("/teacher/division-stats").get(
+    verifyJwt,
+    authorizeRoles("Teacher"),
+    getTeacherStudentStats
 );
 
 export default router;

@@ -257,4 +257,63 @@ const getStoredFace = asyncHandler(async (req, res) => {
     );
 });
 
-export { markStudentAttendance, logTeacherShift, getAdminReports, getStoredFace, getMyAttendanceStats };
+// Teacher gets all students' stats across their lectures, grouped by Division
+const getTeacherStudentStats = asyncHandler(async (req, res) => {
+    const teacherId = req.user._id;
+
+    // Find all ended lectures taught by this teacher
+    const lectures = await Lecture.find({ teacher: teacherId, sessionStatus: "Ended" }).populate("subject", "code name");
+
+    // Fetch attendance for these lectures
+    const attendanceRecords = await Attendance.find({ 
+        lecture: { $in: lectures.map(l => l._id) }
+    }).populate("user", "name email");
+
+    // Calculate aggregated stats by division
+    const statsByDivision = {};
+
+    lectures.forEach(lecture => {
+        const div = lecture.division;
+        if (!statsByDivision[div]) {
+            statsByDivision[div] = {
+                 division: div,
+                 totalLectures: 0,
+                 students: {}
+            };
+        }
+        statsByDivision[div].totalLectures += 1;
+    });
+
+    attendanceRecords.forEach(record => {
+        const div = record.lecture.division;
+        const studentId = record.user._id.toString();
+        
+        if (!statsByDivision[div].students[studentId]) {
+            statsByDivision[div].students[studentId] = {
+                _id: studentId,
+                name: record.user.name,
+                email: record.user.email,
+                attended: 0
+            };
+        }
+        
+        if (record.status === "Present" || record.status === "Late") {
+             statsByDivision[div].students[studentId].attended += 1;
+        }
+    });
+
+    const formattedStats = Object.values(statsByDivision).map(divStat => {
+         return {
+             division: divStat.division,
+             totalLectures: divStat.totalLectures,
+             students: Object.values(divStat.students).map(s => ({
+                 ...s,
+                 percentage: divStat.totalLectures > 0 ? Math.round((s.attended / divStat.totalLectures) * 100) : 0
+             }))
+         };
+    });
+
+    return res.status(200).json(new ApiResponse(200, formattedStats, "Student stats by division fetched"));
+});
+
+export { markStudentAttendance, logTeacherShift, getAdminReports, getStoredFace, getMyAttendanceStats, getTeacherStudentStats };
