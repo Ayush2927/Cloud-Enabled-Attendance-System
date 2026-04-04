@@ -71,6 +71,9 @@ export default function WebcamCapture({ onCapture, isLoading }) {
       return;
     }
 
+    onCapture(base64Image);
+  };
+
   return (
     <div className="webcam-container" style={{ aspectRatio: '4/3', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '240px' }}>
       {error && (
