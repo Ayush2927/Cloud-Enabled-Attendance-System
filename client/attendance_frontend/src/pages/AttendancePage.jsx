@@ -56,18 +56,22 @@ export default function AttendancePage() {
     const performFaceMatch = async (referenceBase64, liveBase64) => {
         try {
             // Helper function to convert base64 to HTMLImageElement
-            const createImage = (b64) => {
+            const createImage = (b64, label) => {
                 return new Promise((resolve, reject) => {
+                    if (!b64 || typeof b64 !== 'string') {
+                        return reject(new Error(`Invalid image data provided for ${label}`));
+                    }
                     const img = new Image();
-                    img.crossOrigin = 'Anonymous';
+                    // crossOrigin is not needed for base64 data URIs and can cause issues
+                    // img.crossOrigin = 'Anonymous';
                     img.onload = () => resolve(img);
-                    img.onerror = () => reject(new Error("Failed to load image for face detection."));
+                    img.onerror = () => reject(new Error(`Failed to load ${label} image for face detection.`));
                     img.src = b64;
                 });
             };
 
-            const refImage = await createImage(referenceBase64);
-            const liveImage = await createImage(liveBase64);
+            const refImage = await createImage(referenceBase64, 'reference');
+            const liveImage = await createImage(liveBase64, 'live webcam');
 
             // Need tinyFaceDetector options
             const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 });
