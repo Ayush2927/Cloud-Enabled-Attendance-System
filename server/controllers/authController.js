@@ -41,6 +41,10 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields, including face image are required");
     }
 
+    if (typeof faceImage !== 'string' || faceImage.length < 50 || faceImage === 'data:,') {
+        throw new ApiError(400, "Invalid biometric data. Please re-capture your face clearly.");
+    }
+
     const existingUser = await User.findOne({ email: String(email) });
 
     if (existingUser) {

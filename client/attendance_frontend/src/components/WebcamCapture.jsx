@@ -52,17 +52,24 @@ export default function WebcamCapture({ onCapture, isLoading }) {
   const captureFrame = () => {
     if (!videoRef.current) return;
     
+    if (videoRef.current.videoWidth === 0 || videoRef.current.videoHeight === 0) {
+      setError('Webcam not fully initialized. Please wait a moment.');
+      return;
+    }
+
     const canvas = document.createElement('canvas');
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
     const ctx = canvas.getContext('2d');
-    
+
     // Draw current frame
     ctx.drawImage(videoRef.current, 0, 0);
     const base64Image = canvas.toDataURL('image/jpeg', 0.8);
-    
-    onCapture(base64Image);
-  };
+
+    if (base64Image === 'data:,') {
+      setError('Failed to capture frame. Ensure camera permissions and lighting are sufficient.');
+      return;
+    }
 
   return (
     <div className="webcam-container" style={{ aspectRatio: '4/3', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '240px' }}>
