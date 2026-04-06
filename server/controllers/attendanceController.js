@@ -316,4 +316,25 @@ const getTeacherStudentStats = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, formattedStats, "Student stats by division fetched"));
 });
 
-export { markStudentAttendance, logTeacherShift, getAdminReports, getStoredFace, getMyAttendanceStats, getTeacherStudentStats };
+const getLectureAttendance = asyncHandler(async (req, res) => {
+    const { lectureId } = req.params;
+    const teacherId = req.user._id;
+
+    // Verify lecture belongs to this teacher
+    const lecture = await Lecture.findById({ _id: lectureId, teacher: teacherId });
+    if (!lecture) {
+        throw new ApiError(404, "Lecture not found or unauthorized");
+    }
+
+    // Fetch all present students for this lecture
+    const attendanceRecords = await Attendance.find({
+        lecture: lectureId,
+        status: "Present"
+    }).populate("user", "name email rollNumber profileImage");
+
+    return res.status(200).json(
+        new ApiResponse(200, attendanceRecords, "Lecture attendance fetched successfully")
+    );
+});
+
+export { markStudentAttendance, logTeacherShift, getAdminReports, getStoredFace, getMyAttendanceStats, getTeacherStudentStats, getLectureAttendance };

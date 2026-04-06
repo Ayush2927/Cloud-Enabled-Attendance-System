@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { FiClock, FiUsers, FiPlayCircle, FiStopCircle, FiHome, FiSettings } from 'react-icons/fi';
+import { FiClock, FiUsers, FiPlayCircle, FiStopCircle, FiHome, FiSettings, FiEye, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import FeatureHub from '../../components/ui/FeatureHub';
 
@@ -11,6 +11,11 @@ export default function TeacherDashboard() {
   const navigate = useNavigate();
   const [lectures, setLectures] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // New state for attendance modal
+  const [selectedLectureInfo, setSelectedLectureInfo] = useState(null);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [isLoadingAttendance, setIsLoadingAttendance] = useState(false);
 
   const teacherFeatures = [
     {
@@ -57,6 +62,26 @@ export default function TeacherDashboard() {
       const msg = err.response?.data?.message || 'Failed to update session status';
       toast.error(msg);
     }
+  };
+
+  const fetchLectureAttendance = async (lecture) => {
+    setSelectedLectureInfo(lecture);
+    setIsLoadingAttendance(true);
+    setAttendanceRecords([]);
+    try {
+      const res = await api.get(`/attendance/teacher/lecture/${lecture._id}`);
+      setAttendanceRecords(res.data.data);
+    } catch (err) {
+      toast.error('Failed to fetch attendance');
+      setSelectedLectureInfo(null);
+    } finally {
+      setIsLoadingAttendance(false);
+    }
+  };
+
+  const closeAttendanceModal = () => {
+    setSelectedLectureInfo(null);
+    setAttendanceRecords([]);
   };
 
   return (
@@ -126,6 +151,13 @@ export default function TeacherDashboard() {
                       Session Closed
                     </button>
                   )}
+                  <button 
+                    onClick={() => fetchLectureAttendance(lecture)}
+                    className="btn btn-outline flex-1"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                  >
+                    <FiEye size={18} /> View Present
+                  </button>
                 </div>
               </div>
             ))}
@@ -145,6 +177,49 @@ export default function TeacherDashboard() {
       </div>
 
       <FeatureHub title="Teacher Features" items={teacherFeatures} />
+
+      {selectedLectureInfo && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex',
+          alignItems: 'center', justifyContent: 'center'
+        }} onClick={closeAttendanceModal}>
+          <div style={{
+            background: '#1a1a1a', borderRadius: '12px', padding: '1.5rem',
+            width: '90%', maxWidth: '500px', border: '1px solid #333',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid #333', paddingBottom: '1rem' }}>
+              <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#ccff00' }}>Attendance: {selectedLectureInfo.subject.name} (Div {selectedLectureInfo.division})</h2>
+              <button onClick={closeAttendanceModal} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '1.5rem' }}>&times;</button>
+            </div>
+            <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+              {isLoadingAttendance ? (
+                <div style={{ textAlign: 'center', padding: '1rem', color: '#aaa' }}>Loading attendance...</div>
+              ) : attendanceRecords.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '1rem', color: '#aaa' }}>No students marked present yet.</div>
+              ) : (
+                <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
+                  {attendanceRecords.map((record, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.8rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <strong style={{ fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff' }}>
+                          <FiCheckCircle color="#10b981" /> {record.user?.name || 'Unknown Student'}
+                        </strong>
+                        <span style={{ fontSize: '0.9rem', color: '#ccc' }}>{record.user?.email || 'No email provided'}</span>
+                        <span style={{ fontSize: '0.85rem', color: '#888' }}>Time: {new Date(record.createdAt).toLocaleTimeString()}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div style={{ marginTop: '1.5rem', textAlign: 'right', paddingTop: '1rem', borderTop: '1px solid #333' }}>
+              <button style={{ padding: '0.5rem 1rem', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={closeAttendanceModal}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
