@@ -24,6 +24,32 @@ const app = express();
 // Helmet: sets security-related HTTP headers
 app.use(helmet());
 
+// CORS: strictly whitelisted origins for credentialed requests
+const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://cloud-enabled-attendance-system-pink.vercel.app",
+    ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : [])
+]
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
+const corsOptions = {
+    origin: function(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
+            callback(null, true);
+        } else {
+            callback(new Error(`Not allowed by CORS: ${origin}`));
+        }
+    },
+    credentials: true,
+    methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+};
+
+// Apply CORS before rate-limiting to ensure preflights aren't blocked
+app.use(cors(corsOptions));
+
 // Rate limiting: prevent brute force & DoS
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -42,31 +68,6 @@ const authLimiter = rateLimit({
 });
 
 app.use(generalLimiter);
-
-// CORS: strictly whitelisted origins for credentialed requests
-const allowedOrigins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://cloud-enabled-attendance-system-pink.vercel.app",
-    ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : [])
-]
-    .map(origin => origin.trim())
-    .filter(Boolean);
-
-const corsOptions = {
-    origin: function(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error(`Not allowed by CORS: ${origin}`));
-        }
-    },
-    credentials: true,
-    methods: ["GET", "PUT", "POST", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
-};
-
-app.use(cors(corsOptions));
 
 // Body Parsers: reasonable limit to prevent abuse
 app.use(express.json({ limit: "2mb" }));
