@@ -4,6 +4,17 @@ import api from '../../services/api';
 import toast from 'react-hot-toast';
 import WebcamCapture from '../../components/WebcamCapture';
 import * as faceapi from 'face-api.js';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/select';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -55,76 +66,85 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="card-glass auth-card" style={{ maxWidth: '500px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-          <h1 className="auth-logo">AttendEase</h1>
-          <h2 className="auth-title">Create Account</h2>
-          <p className="auth-subtitle">Register your biometric profile</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-2 text-center">
+          <CardTitle className="text-3xl font-bold text-accent">AttendEase</CardTitle>
+          <h2 className="text-2xl font-semibold">Create Account</h2>
+          <CardDescription>Register your biometric profile</CardDescription>
+        </CardHeader>
 
-        <form className="auth-form" onSubmit={e => e.preventDefault()}>
-          <div className="grid-2">
-            <div className="form-group">
-              <label className="form-label">Full Name</label>
-              <input 
-                type="text" 
-                className="form-input" 
-                value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
+        <CardContent className="space-y-6">
+          <form onSubmit={e => e.preventDefault()} className="space-y-4">
+            {/* Name and Role Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input 
+                  id="name"
+                  type="text" 
+                  value={formData.name}
+                  onChange={e => setFormData({...formData, name: e.target.value})}
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})} disabled={isLoading}>
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Student">Student</SelectItem>
+                    <SelectItem value="Teacher">Teacher</SelectItem>
+                    <SelectItem value="Admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input 
+                id="email"
+                type="email" 
+                value={formData.email}
+                onChange={e => setFormData({...formData, email: e.target.value})}
                 disabled={isLoading}
               />
             </div>
-            <div className="form-group">
-              <label className="form-label">Role</label>
-              <select 
-                className="form-select"
-                value={formData.role}
-                onChange={e => setFormData({...formData, role: e.target.value})}
+
+            {/* Password */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input 
+                id="password"
+                type="password" 
+                value={formData.password}
+                onChange={e => setFormData({...formData, password: e.target.value})}
                 disabled={isLoading}
-              >
-                <option value="Student">Student</option>
-                <option value="Teacher">Teacher</option>
-                <option value="Admin">Admin</option>
-              </select>
+              />
             </div>
-          </div>
 
-          <div className="form-group">
-            <label className="form-label">Email Address</label>
-            <input 
-              type="email" 
-              className="form-input" 
-              value={formData.email}
-              onChange={e => setFormData({...formData, email: e.target.value})}
-              disabled={isLoading}
-            />
-          </div>
+            {/* Biometric */}
+            <div className="space-y-3">
+              <Label>Register Face (Required)</Label>
+              <WebcamCapture onCapture={handleCapture} isLoading={isLoading} />
+              <p className="text-xs text-muted-foreground text-center">
+                This image will be stored as your master biometric footprint. Ensure good lighting.
+              </p>
+            </div>
+          </form>
 
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input 
-              type="password" 
-              className="form-input" 
-              value={formData.password}
-              onChange={e => setFormData({...formData, password: e.target.value})}
-              disabled={isLoading}
-            />
+          <div className="pt-2 text-center text-sm">
+            Already have an account?{' '}
+            <Link to="/login" className="text-accent hover:text-accent/80 font-semibold">
+              Login here
+            </Link>
           </div>
-
-          <div style={{ marginTop: 'var(--space-2)' }}>
-            <label className="form-label" style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Register Face (Required)</label>
-            <WebcamCapture onCapture={handleCapture} isLoading={isLoading} />
-            <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', textAlign: 'center', marginTop: 'var(--space-2)' }}>
-              This image will be stored as your master biometric footprint. Ensure good lighting.
-            </p>
-          </div>
-        </form>
-
-        <div className="auth-footer">
-          Already have an account? <Link to="/login">Login here</Link>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
