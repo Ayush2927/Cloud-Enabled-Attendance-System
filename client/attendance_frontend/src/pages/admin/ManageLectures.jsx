@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import api from '@/services/api';
 import toast from 'react-hot-toast';
-import { FiTrash2, FiHome, FiBook, FiClock, FiUsers, FiSettings } from 'react-icons/fi';
-import FeatureHub from '../../components/ui/FeatureHub';
+import { FiTrash2, FiHome, FiBook, FiClock, FiUsers, FiSettings, FiCalendar, FiAlertCircle } from 'react-icons/fi';
+import FeatureHub from '@/components/ui/FeatureHub';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ManageLectures() {
   const navigate = useNavigate();
@@ -85,86 +91,169 @@ export default function ManageLectures() {
   };
 
   return (
-    <div className="page animate-fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Timetable Configuration</h1>
-        <p className="page-subtitle">Master schedule planning interface. Assign instructors dynamically.</p>
+    <div className="min-h-screen pt-24 px-4 max-w-7xl mx-auto space-y-8 animate-fade-in pb-12">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Timetable Configuration</h1>
+        <p className="text-muted-foreground">Master schedule planning interface. Assign instructors dynamically.</p>
       </div>
 
-      <div className="grid-2 page-grid-top">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         
         {/* Creator Panel */}
-        <div className="card-glass">
-          <h2 className="section-title">Schedule New Subject Session</h2>
-          <form className="auth-form grid-2" onSubmit={handleCreate}>
-            
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label className="form-label">Attached Subject</label>
-              <select className="form-select" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} required>
-                <option value="">-- Choose Subject --</option>
-                {subjects.map(s => <option key={s._id} value={s._id}>{s.name} ({s.code})</option>)}
-              </select>
-            </div>
+        <Card className="border-primary/20 shadow-lg sticky top-24">
+          <CardHeader className="bg-secondary/10 border-b border-border/50">
+            <CardTitle className="flex items-center gap-2">
+              <FiCalendar className="text-primary" /> Schedule New Session
+            </CardTitle>
+            <CardDescription>Configure a new lecture slot for the master timetable.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <form onSubmit={handleCreate} className="space-y-6">
+              
+              <div className="space-y-2 focus-within:text-primary transition-colors">
+                <Label htmlFor="subjectSelect">Attached Subject</Label>
+                <Select value={formData.subject} onValueChange={(val) => setFormData({...formData, subject: val})} required>
+                  <SelectTrigger id="subjectSelect">
+                    <SelectValue placeholder="-- Choose Subject --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects.map(s => <SelectItem key={s._id} value={s._id}>{s.name} ({s.code})</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label className="form-label">Instructor (Teacher)</label>
-              <select className="form-select" value={formData.teacher} onChange={e => setFormData({...formData, teacher: e.target.value})} required>
-                <option value="">-- Choose Instructor --</option>
-                {teachers.map(t => <option key={t._id} value={t._id}>{t.name} ({t.email})</option>)}
-              </select>
-              {teachers.length === 0 && (
-                <div className="input-warning-text">
-                  No teachers found. You must register a Teacher account before scheduling.
-                </div>
-              )}
-            </div>
-
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label className="form-label">Target Division</label>
-              <select className="form-select" value={formData.division} onChange={e => setFormData({...formData, division: e.target.value})}>
-                  <option>SEM-1</option><option>SEM-2</option>
-                  <option>SEM-3</option><option>SEM-4</option>
-                  <option>SEM-5</option><option>SEM-6</option>
-                  <option>SEM-7</option><option>SEM-8</option>
-              </select>
-            </div>
-
-            <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label className="form-label">Session Date</label>
-                <input type="date" className="form-input" min={new Date().toISOString().split('T')[0]} value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required />              </div>            <div className="form-group">
-              <label className="form-label">Starts At</label>
-              <input type="time" className="form-input" value={formData.startTime} onChange={e => setFormData({...formData, startTime: e.target.value})} required />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Ends At</label>
-              <input type="time" className="form-input" value={formData.endTime} onChange={e => setFormData({...formData, endTime: e.target.value})} required />
-            </div>
-
-            <button type="submit" className="btn btn-primary span-2">Publish to Timetable</button>
-          </form>
-        </div>
-
-        {/* Global Timetable */}
-        <div className="card-glass stack-sm">
-          <h2 className="section-title-sm">Master System Timetable</h2>
-          {isLoading ? <p>Pulling system timetable...</p> : lectures.length === 0 ? <p className="text-muted">No scheduled infrastructure found.</p> : (
-            lectures.map(lec => (
-              <div key={lec._id} className="list-item" style={{ borderLeftColor: lec.sessionStatus === 'Ended' ? 'var(--text-muted)' : 'var(--accent)' }}>
-                <div>
-                  <div className="list-item-title">{lec.subject?.name} <span className="list-item-subtle">(Div {lec.division})</span></div>
-                  <div className="list-item-subtitle">
-                    {lec.date.substring(0, 10)} | {lec.startTime} - {lec.endTime}
+              <div className="space-y-2 focus-within:text-primary transition-colors">
+                <Label htmlFor="teacherSelect">Instructor (Teacher)</Label>
+                <Select value={formData.teacher} onValueChange={(val) => setFormData({...formData, teacher: val})} required>
+                  <SelectTrigger id="teacherSelect">
+                    <SelectValue placeholder="-- Choose Instructor --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teachers.map(t => <SelectItem key={t._id} value={t._id}>{t.name} ({t.email})</SelectItem>)}
+                  </SelectContent>
+                </Select>
+{teachers.length === 0 && (
+                  <div className="flex items-center gap-2 mt-2 text-sm text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20">
+                    <FiAlertCircle size={16} /> <span>No teachers found. You must register a Teacher account before scheduling.</span>
                   </div>
+                )}
+              </div>
+
+              <div className="space-y-2 focus-within:text-primary transition-colors">
+                <Label htmlFor="divisionSelect">Target Division</Label>
+                <Select value={formData.division} onValueChange={(val) => setFormData({...formData, division: val})}>
+                  <SelectTrigger id="divisionSelect">
+                    <SelectValue placeholder="-- Select Semester --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {['SEM-1', 'SEM-2', 'SEM-3', 'SEM-4', 'SEM-5', 'SEM-6', 'SEM-7', 'SEM-8'].map(sem => (
+                      <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2 focus-within:text-primary transition-colors">
+                <Label htmlFor="sessionDate">Session Date</Label>
+                <Input 
+                  id="sessionDate"
+                  type="date" 
+                  min={new Date().toISOString().split('T')[0]} 
+                  value={formData.date} 
+                  onChange={e => setFormData({...formData, date: e.target.value})} 
+                  required 
+                />
+              </div>            
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2 focus-within:text-primary transition-colors">
+                  <Label htmlFor="startTime">Starts At</Label>
+                  <Input 
+                    id="startTime"
+                    type="time" 
+                    value={formData.startTime} 
+                    onChange={e => setFormData({...formData, startTime: e.target.value})} 
+                    required 
+                  />
                 </div>
-                <div className="row-actions">
-                  <span className={`badge ${lec.sessionStatus === 'Active' ? 'badge-success' : 'badge-warning'}`}>{lec.sessionStatus}</span>
-                  <button onClick={() => handleDelete(lec._id)} className="btn-icon row-delete-btn">
-                    <FiTrash2 />
-                  </button>
+
+                <div className="space-y-2 focus-within:text-primary transition-colors">
+                  <Label htmlFor="endTime">Ends At</Label>
+                  <Input 
+                    id="endTime"
+                    type="time" 
+                    value={formData.endTime} 
+                    onChange={e => setFormData({...formData, endTime: e.target.value})} 
+                    required 
+                  />
                 </div>
               </div>
-            ))
+
+              <Button type="submit" className="w-full mt-4" size="lg">Publish to Timetable</Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Global Timetable */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+             Master System Timetable
+          </h2>
+          
+          {isLoading ? (
+            <Card className="border-border/50 border-dashed">
+              <CardContent className="p-8 text-center text-muted-foreground flex flex-col items-center gap-2">
+                <FiClock className="animate-spin" size={24} />
+                Pulling system timetable...
+              </CardContent>
+            </Card>
+          ) : lectures.length === 0 ? (
+            <Card className="border-border/50 border-dashed bg-secondary/5">
+              <CardContent className="p-8 text-center text-muted-foreground flex flex-col items-center gap-2">
+                <FiCalendar className="opacity-20" size={32} />
+                No scheduled infrastructure found.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {lectures.map(lec => (
+                <Card 
+                  key={lec._id} 
+                  className={`overflow-hidden transition-all duration-300 hover:shadow-md border-l-4 ${lec.sessionStatus === 'Ended' ? 'border-l-muted hover:border-muted/80 bg-secondary/5' : 'border-l-primary hover:border-primary/80 bg-secondary/10'}`}
+                >
+                  <CardContent className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex-1 opacity-90 hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-lg text-foreground">{lec.subject?.name}</h3>
+                        <Badge variant="outline" className="text-xs shrink-0">Div {lec.division}</Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-2">
+                        <FiClock size={14} />
+                        {lec.date.substring(0, 10)} | {lec.startTime} - {lec.endTime}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-border/50">
+                      <Badge 
+                        variant={lec.sessionStatus === 'Active' ? 'default' : 'secondary'} 
+                        className={`w-full sm:w-auto text-center justify-center shrink-0 ${lec.sessionStatus === 'Active' ? 'bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30' : 'bg-amber-500/20 text-amber-500 hover:bg-amber-500/30'}`}
+                      >
+                        {lec.sessionStatus}
+                      </Badge>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0 outline-none focus:ring-1 focus:ring-destructive/50"
+                        onClick={() => handleDelete(lec._id)}
+                        title="Delete Lecture"
+                      >
+                        <FiTrash2 size={18} />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
         </div>
 
