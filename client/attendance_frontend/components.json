@@ -3,11 +3,19 @@
   "style": "new-york",
   "rsc": false,
   "tsx": true,
-  "alias": {
-    "@": "./src",
-    "@/components": "./src/components",
-    "@/lib": "./src/lib",
-    "@/hooks": "./src/hooks",
-    "@/utils": "./src/utils"
-  }
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "src/index.css",
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "iconLibrary": "lucide"
 }

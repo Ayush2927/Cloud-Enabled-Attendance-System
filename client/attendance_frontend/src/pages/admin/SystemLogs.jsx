@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import api from '@/services/api';
 import toast from 'react-hot-toast';
-import { FiHome, FiBook, FiClock, FiUsers, FiSettings } from 'react-icons/fi';
-import FeatureHub from '../../components/ui/FeatureHub';
+import { FiHome, FiBook, FiClock, FiUsers, FiSettings, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import FeatureHub from '@/components/ui/FeatureHub';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/Table"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function SystemLogs() {
   const navigate = useNavigate();
@@ -33,58 +43,81 @@ export default function SystemLogs() {
   }, []);
 
   if (isLoading) {
-    return <div className="page flex justify-center items-center">Loading audit logs...</div>;
+    return <div className="min-h-screen pt-24 px-4 flex justify-center items-center">Loading audit logs...</div>;
   }
 
   return (
-    <div className="page animate-fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Master Attendance Logs</h1>
-        <p className="page-subtitle">Security audit trail of all biometric verifications and automated absence triggers.</p>
+    <div className="min-h-screen pt-24 px-4 max-w-7xl mx-auto space-y-8 animate-fade-in pb-12">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Master Attendance Logs</h1>
+        <p className="text-muted-foreground">Security audit trail of all biometric verifications and automated absence triggers.</p>
       </div>
 
-      <div className="table-container card-glass">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Timestamp (IST)</th>
-              <th>Student</th>
-              <th>Subject</th>
-              <th>Status</th>
-              <th>Biometric Proof</th>
-              <th>Check-Out</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="table-empty-cell">No system logs recorded yet.</td>
-              </tr>
-            ) : (
-              logs.map((log) => (
-                <tr key={log._id}>
-                  <td>{log.dateIST}</td>
-                  <td className="table-main-cell">{log.user?.name} <span className="table-subtext">{log.user?.email}</span></td>
-                  <td>{log.subject?.name} <span className="table-inline-subtext">(Div {log.lecture?.division})</span></td>
-                  <td>
-                    <span className={`badge ${log.status === 'Present' ? 'badge-success' : 'badge-danger'}`}>
-                      {log.status}
-                    </span>
-                  </td>
-                  <td>
-                    {log.status === 'Present' ? (
-                      log.hasFaceProof ? <span className="proof-ok">Captured</span> : <span className="proof-missing">Missing</span>
-                    ) : (
-                      <span className="proof-na">N/A</span>
-                    )}
-                  </td>
-                  <td className="table-muted-cell">{log.checkOutIST}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Card className="border-primary/20 shadow-lg overflow-hidden">
+        <CardHeader className="bg-secondary/10 border-b border-border/50">
+          <CardTitle>System Activity</CardTitle>
+          <CardDescription>Recent attendance events across all subjects and lectures.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-secondary/20">
+                <TableRow>
+                  <TableHead className="font-semibold w-[180px]">Timestamp (IST)</TableHead>
+                  <TableHead className="font-semibold">Student</TableHead>
+                  <TableHead className="font-semibold">Subject</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Biometric Proof</TableHead>
+                  <TableHead className="font-semibold text-right">Check-Out</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {logs.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No system logs recorded yet.</TableCell>
+                  </TableRow>
+                ) : (
+                  logs.map((log) => (
+                    <TableRow key={log._id} className="hover:bg-secondary/10 transition-colors">
+                      <TableCell className="font-medium text-xs whitespace-nowrap">{log.dateIST}</TableCell>
+                      <TableCell>
+                        <div className="font-medium text-foreground">{log.user?.name}</div>
+                        <div className="text-xs text-muted-foreground">{log.user?.email}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-foreground">{log.subject?.name}</div>
+                        <div className="text-xs text-muted-foreground">Div {log.lecture?.division}</div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={log.status === 'Present' ? 'default' : 'destructive'} 
+                          className={log.status === 'Present' ? 'bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30' : 'bg-red-500/20 text-red-500 hover:bg-red-500/30'}>
+                          {log.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {log.status === 'Present' ? (
+                          log.hasFaceProof ? (
+                            <span className="flex items-center gap-1 text-xs font-medium text-emerald-500">
+                              <FiCheckCircle size={14} /> Captured
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-xs font-medium text-amber-500">
+                              <FiXCircle size={14} /> Missing
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-muted-foreground text-xs">N/A</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right text-xs text-muted-foreground whitespace-nowrap">{log.checkOutIST}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       <FeatureHub title="Admin Features" items={adminFeatures} />
     </div>
