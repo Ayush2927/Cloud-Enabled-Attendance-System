@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --bg-primary: #050607;
   --bg-secondary: #090b0d;
@@ -1425,3 +1429,4 @@ textarea:focus {
     min-width: 250px;
   }
 }
+
