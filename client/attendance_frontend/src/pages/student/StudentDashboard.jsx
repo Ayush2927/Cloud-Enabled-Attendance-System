@@ -9,7 +9,7 @@ import FeatureHub from '../../components/ui/FeatureHub';
 export default function StudentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [division, setDivision] = useState('SE-B'); // Placeholder default
+  const [division, setDivision] = useState('SEM-1'); // Placeholder default
   const [lectures, setLectures] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -75,9 +75,14 @@ export default function StudentDashboard() {
             value={division} 
             onChange={e => setDivision(e.target.value)}
           >
-            <option value="SE-A">SE-A</option>
-            <option value="SE-B">SE-B</option>
-            <option value="TE-A">TE-A</option>
+            <option value="SEM-1">SEM-1</option>
+            <option value="SEM-2">SEM-2</option>
+            <option value="SEM-3">SEM-3</option>
+            <option value="SEM-4">SEM-4</option>
+            <option value="SEM-5">SEM-5</option>
+            <option value="SEM-6">SEM-6</option>
+            <option value="SEM-7">SEM-7</option>
+            <option value="SEM-8">SEM-8</option>
           </select>
         </div>
       </div>

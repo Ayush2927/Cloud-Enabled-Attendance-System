@@ -19,7 +19,7 @@ export default function ManageLectures() {
     date: new Date().toISOString().split('T')[0],
     startTime: '09:00',
     endTime: '10:00',
-    division: 'SE-A'
+    division: 'SEM-1'
   });
 
   const adminFeatures = [
@@ -122,8 +122,10 @@ export default function ManageLectures() {
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
               <label className="form-label">Target Division</label>
               <select className="form-select" value={formData.division} onChange={e => setFormData({...formData, division: e.target.value})}>
-                <option>SE-A</option><option>SE-B</option>
-                <option>TE-A</option><option>TE-B</option>
+                  <option>SEM-1</option><option>SEM-2</option>
+                  <option>SEM-3</option><option>SEM-4</option>
+                  <option>SEM-5</option><option>SEM-6</option>
+                  <option>SEM-7</option><option>SEM-8</option>
               </select>
             </div>
 
