@@ -6,6 +6,11 @@ import { FiClock, FiCheckSquare, FiPieChart, FiSettings, FiHome } from 'react-ic
 import toast from 'react-hot-toast';
 import FeatureHub from '../../components/ui/FeatureHub';
 
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../../components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Badge } from '../../components/ui/badge';
+
 export default function StudentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -61,83 +66,84 @@ export default function StudentDashboard() {
   }, [division]);
 
   return (
-    <div className="page animate-fade-in">
-      <div className="page-header page-header-row">
+    <div className="p-6 md:p-8 max-w-6xl mx-auto animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 className="page-title">Welcome back, {user?.name.split(' ')[0]} 👋</h1>
-          <p className="page-subtitle">Here is your timeline for today.</p>
+          <h1 className="text-3xl font-bold text-foreground">Welcome back, {user?.name.split(' ')[0]} 👋</h1>
+          <p className="text-muted-foreground mt-1">Here is your timeline for today.</p>
         </div>
         
-        <div className="filter-row">
-          <span className="form-label mb-0">Division:</span>
-          <select 
-            className="form-select form-select-inline"
-            value={division} 
-            onChange={e => setDivision(e.target.value)}
-          >
-            <option value="SEM-1">SEM-1</option>
-            <option value="SEM-2">SEM-2</option>
-            <option value="SEM-3">SEM-3</option>
-            <option value="SEM-4">SEM-4</option>
-            <option value="SEM-5">SEM-5</option>
-            <option value="SEM-6">SEM-6</option>
-            <option value="SEM-7">SEM-7</option>
-            <option value="SEM-8">SEM-8</option>
-          </select>
+        <div className="flex items-center gap-3 bg-secondary/30 p-2 rounded-lg border border-border">
+          <span className="text-sm font-medium text-foreground whitespace-nowrap px-2">Division:</span>
+          <Select value={division} onValueChange={setDivision}>
+            <SelectTrigger className="w-[120px] h-9 bg-background">
+              <SelectValue placeholder="Select Dev" />
+            </SelectTrigger>
+            <SelectContent>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
+                <SelectItem key={`SEM-${sem}`} value={`SEM-${sem}`}>SEM-{sem}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <div className="page-section">
-        <h2 className="section-title">Today's Lectures</h2>
+      <div className="mb-10">
+        <h2 className="text-xl font-semibold text-foreground mb-4">Today's Lectures</h2>
         
         {isLoading ? (
-          <div className="card-glass animate-pulse skeleton-card"></div>
+          <Card className="h-40 flex items-center justify-center bg-card/50">
+            <div className="animate-pulse flex items-center gap-3 text-muted-foreground">
+              <FiClock className="animate-spin" /> Loading timeline...
+            </div>
+          </Card>
         ) : lectures.length === 0 ? (
-          <div className="card-glass empty-state">
-            <h3>No lectures scheduled</h3>
-            <p>You have a free day today! Enjoy your off time.</p>
-          </div>
+          <Card className="h-40 flex flex-col items-center justify-center bg-card/20 border-dashed text-center p-6">
+            <h3 className="text-lg font-medium text-foreground mb-1">No lectures scheduled</h3>
+            <p className="text-muted-foreground">You have a free day today! Enjoy your off time.</p>
+          </Card>
         ) : (
-          <div className="grid-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {lectures.map((lecture) => (
-              <div key={lecture._id} className="card-glass card-col">
-                <div className="card-row-between mb-md">
-                  <span className={`badge ${
-                    lecture.sessionStatus === 'Active' ? 'badge-success' : 
-                    lecture.sessionStatus === 'Ended' ? 'badge-info' : 'badge-warning'
-                  }`}>
-                    {lecture.sessionStatus}
-                  </span>
-                  <div className="meta-inline">
-                    <FiClock /> {lecture.startTime} - {lecture.endTime}
+              <Card key={lecture._id} className="flex flex-col bg-card/60 backdrop-blur-sm hover:border-primary/40 transition-colors">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-center mb-2">
+                    <Badge variant={
+                      lecture.sessionStatus === 'Active' ? 'default' : 
+                      lecture.sessionStatus === 'Ended' ? 'secondary' : 'outline'
+                    }>
+                      {lecture.sessionStatus}
+                    </Badge>
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-secondary/50 px-2 py-1 rounded-md">
+                      <FiClock size={14} className="text-primary" /> {lecture.startTime} - {lecture.endTime}
+                    </div>
                   </div>
-                </div>
-
-                <h3 className="card-title-sm">
-                  {lecture.subject.name}
-                </h3>
-                <p className="card-subtitle mb-lg">
-                  Prof. {lecture.teacher.name} • Div {lecture.division}
-                </p>
-
-                <div className="card-footer-auto">
+                  <CardTitle className="text-xl leading-tight line-clamp-1">{lecture.subject.name}</CardTitle>
+                  <CardDescription className="text-sm mt-1 flex items-center gap-2">
+                    <span>Prof. {lecture.teacher.name}</span>
+                    <span className="w-1 h-1 rounded-full bg-muted-foreground/40"></span>
+                    <span>Div {lecture.division}</span>
+                  </CardDescription>
+                </CardHeader>
+                <CardFooter className="mt-auto pt-4 border-t border-border/50">
                   {lecture.sessionStatus === 'Active' ? (
-                    <button 
+                    <Button 
                       onClick={() => navigate(`/student/mark-attendance/${lecture._id}`)}
-                      className="btn btn-primary w-full"
+                      className="w-full gap-2 shadow-lg shadow-primary/20"
                     >
-                      <FiCheckSquare /> Mark Present Now
-                    </button>
+                      <FiCheckSquare size={16} /> Mark Present Now
+                    </Button>
                   ) : (
-                    <button 
+                    <Button 
                       disabled
-                      className="btn btn-secondary w-full"
+                      variant="secondary"
+                      className="w-full opacity-60"
                     >
                       {lecture.sessionStatus === 'Scheduled' ? 'Waiting to Start' : 'Session Ended'}
-                    </button>
+                    </Button>
                   )}
-                </div>
-              </div>
+                </CardFooter>
+              </Card>
             ))}
           </div>
         )}
