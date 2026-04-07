@@ -88,11 +88,12 @@ export default function AttendancePage() {
             if (!refResults) throw new Error("Could not detect any face in your registered profile image.");
             if (!liveResults) throw new Error("Could not detect your face in the webcam snapshot. Ensure good lighting.");
 
-            // Calculate distance (lower is better, threshold typically around 0.6)
+            // Calculate distance (lower is better)
+            // 0.6 is too lenient. 0.42 enforces a strict exact-person match.
             const distance = faceapi.euclideanDistance(refResults.descriptor, liveResults.descriptor);
             console.log("Face Match distance:", distance);
             
-            return distance < 0.6;
+            return distance < 0.42;
         } catch (error) {
             throw error;
         }

@@ -52,7 +52,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     // Mathematical Comparison of Euclidean Distance
-    const DISTANCE_THRESHOLD = 0.45; // lower means stricter match. 0.45 is standard for face-api
+    const DISTANCE_THRESHOLD = 0.42; // strict match. 0.45 was too lenient for sibling-matches
     
     // Fetch all users that have a faceDescriptor array populated
     const existingUsersWithFaces = await User.find({ 
