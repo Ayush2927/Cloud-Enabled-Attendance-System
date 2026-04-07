@@ -122,7 +122,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     if (liveFaceDescriptor && liveFaceDescriptor.length === 128) {
         // Verify against registered face descriptor
-        const DISTANCE_THRESHOLD = 0.55; // Using 0.55 for standard leniency
+        const DISTANCE_THRESHOLD = 0.42; // Tighter strictness (0.35-0.45 is best to avoid false positives)
         let distance = 0;
         for (let i = 0; i < 128; i++) {
             distance += Math.pow(user.faceDescriptor[i] - liveFaceDescriptor[i], 2);
