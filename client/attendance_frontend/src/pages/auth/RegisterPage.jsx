@@ -24,23 +24,34 @@ export default function RegisterPage() {
     setIsLoading(true);
     
     try {
-      // 1. Instantly load AI model to verify a face even exists in the frame
+      // 1. Load AI models to verify face and extract unique mathematical descriptor (array)
       const MODEL_URL = '/models';
-      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+      ]);
       
       const img = new Image();
       img.src = base64Image;
       await new Promise(resolve => img.onload = resolve);
       
-      const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions());
+      const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+                                      .withFaceLandmarks()
+                                      .withFaceDescriptor();
+
       if (!detections) {
         throw new Error("No face detected! Please ensure your face is clearly visible.");
       }
 
+      // Convert Float32Array to standard JavaScript Array so it can travel over JSON to our server
+      const faceDescriptor = Array.from(detections.descriptor);
+
       // 2. Face found! Create payload
       const payload = {
         ...formData,
-        faceImage: base64Image
+        faceImage: base64Image,
+        faceDescriptor
       };
 
       await api.post('/auth/register', payload);

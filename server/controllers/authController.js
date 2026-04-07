@@ -35,10 +35,10 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { email, name, role, password, subjects, faceImage } = req.body;
+    const { email, name, role, password, subjects, faceImage, faceDescriptor } = req.body;
 
-    if (!email || !password || !name || !faceImage) {
-        throw new ApiError(400, "All fields, including face image are required");
+    if (!email || !password || !name || !faceImage || !faceDescriptor) {
+        throw new ApiError(400, "All fields, including face image and descriptor are required");
     }
 
     if (typeof faceImage !== 'string' || faceImage.length < 50 || faceImage === 'data:,') {
@@ -48,7 +48,31 @@ const registerUser = asyncHandler(async (req, res) => {
     const existingUser = await User.findOne({ email: String(email) });
 
     if (existingUser) {
-        throw new ApiError(409, "User already exists");
+        throw new ApiError(409, "User already exists with this email");
+    }
+
+    // Mathematical Comparison of Euclidean Distance
+    const DISTANCE_THRESHOLD = 0.45; // lower means stricter match. 0.45 is standard for face-api
+    
+    // Fetch all users that have a faceDescriptor array populated
+    const existingUsersWithFaces = await User.find({ 
+        faceDescriptor: { $exists: true, $not: { $size: 0 } } 
+    }).select("name faceDescriptor");
+
+    for (const existing of existingUsersWithFaces) {
+        if (existing.faceDescriptor && existing.faceDescriptor.length === 128) {
+            let distance = 0;
+            // Calculate euclidean distance
+            for (let i = 0; i < 128; i++) {
+                distance += Math.pow(existing.faceDescriptor[i] - faceDescriptor[i], 2);
+            }
+            distance = Math.sqrt(distance);
+
+            // If the math formula says they are less than 0.45 apart, it's the exact same face
+            if (distance < DISTANCE_THRESHOLD) {
+                throw new ApiError(409, `Biometric conflict: Face already registered to user "${existing.name}"`);
+            }
+        }
     }
 
     const user = await User.create({
@@ -57,6 +81,7 @@ const registerUser = asyncHandler(async (req, res) => {
         password,
         role,
         faceData: faceImage,
+        faceDescriptor,
         isFaceRegistered: true,
         subjects: (role === "Teacher" || role === "Admin") ? subjects : []
     });

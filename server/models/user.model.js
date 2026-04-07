@@ -17,6 +17,10 @@ const UserSchema = new mongoose.Schema(
         type: String,
         default: null
     },
+    faceDescriptor: {
+        type: [Number],
+        default: []
+    },
     isFaceRegistered: {
         type: Boolean,
         default: false
