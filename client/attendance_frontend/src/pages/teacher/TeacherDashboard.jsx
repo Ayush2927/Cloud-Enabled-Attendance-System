@@ -6,6 +6,10 @@ import { FiClock, FiUsers, FiPlayCircle, FiStopCircle, FiHome, FiSettings, FiEye
 import toast from 'react-hot-toast';
 import FeatureHub from '../../components/ui/FeatureHub';
 
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+
 export default function TeacherDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -85,138 +89,167 @@ export default function TeacherDashboard() {
   };
 
   return (
-    <div className="page animate-fade-in">
-      <div className="page-header page-header-row">
-        <div>
-          <h1 className="page-title">Welcome, Prof. {user?.name.split(' ')[0]}</h1>
-          <p className="page-subtitle">Manage your sessions and track student attendance.</p>
-        </div>
+    <div className="p-6 md:p-8 max-w-6xl mx-auto animate-in fade-in duration-500">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-foreground">Welcome, Prof. {user?.name.split(' ')[0]}</h1>
+        <p className="text-muted-foreground mt-1">Manage your sessions and track student attendance.</p>
       </div>
 
-      <div className="page-section">
-        <h2 className="section-title">Your Schedule for Today</h2>
+      <div className="mb-10">
+        <h2 className="text-xl font-semibold text-foreground mb-4">Your Schedule for Today</h2>
         
         {isLoading ? (
-          <div className="card-glass animate-pulse skeleton-card"></div>
+          <Card className="h-40 flex items-center justify-center bg-card/50">
+            <div className="animate-pulse flex items-center gap-3 text-muted-foreground">
+              <FiClock className="animate-spin" /> Loading schedule...
+            </div>
+          </Card>
         ) : lectures.length === 0 ? (
-          <div className="card-glass empty-state">
-            <h3>No lectures assigned today</h3>
-            <p>You have a free schedule! Use your time well.</p>
-          </div>
+          <Card className="h-40 flex flex-col items-center justify-center bg-card/20 border-dashed text-center p-6">
+            <h3 className="text-lg font-medium text-foreground mb-1">No lectures assigned today</h3>
+            <p className="text-muted-foreground">You have a free schedule! Use your time well.</p>
+          </Card>
         ) : (
-          <div className="grid-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {lectures.map((lecture) => (
-              <div key={lecture._id} className="card-glass card-col">
-                <div className="card-row-between mb-md">
-                  <span className={`badge ${
-                    lecture.sessionStatus === 'Active' ? 'badge-success' : 
-                    lecture.sessionStatus === 'Ended' ? 'badge-info' : 'badge-warning'
-                  }`}>
-                    {lecture.sessionStatus}
-                  </span>
-                  <div className="meta-inline">
-                    <FiClock /> {lecture.startTime} - {lecture.endTime}
+              <Card key={lecture._id} className="flex flex-col bg-card/60 backdrop-blur-sm hover:border-primary/40 transition-colors">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-center mb-2">
+                    <Badge variant={
+                      lecture.sessionStatus === 'Active' ? 'default' : 
+                      lecture.sessionStatus === 'Ended' ? 'secondary' : 'outline'
+                    }>
+                      {lecture.sessionStatus}
+                    </Badge>
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-secondary/50 px-2 py-1 rounded-md">
+                      <FiClock size={14} className="text-primary" /> {lecture.startTime} - {lecture.endTime}
+                    </div>
                   </div>
-                </div>
 
-                <h3 className="card-title-md">
-                  {lecture.subject.name} ({lecture.subject.code})
-                </h3>
-                <p className="card-subtitle mb-lg">
-                  Division {lecture.division} • Room: TBA
-                </p>
+                  <CardTitle className="text-xl leading-tight line-clamp-1">
+                    {lecture.subject.name} ({lecture.subject.code})
+                  </CardTitle>
+                  <CardDescription className="text-sm mt-1">
+                    Division {lecture.division} &bull; Room: TBA
+                  </CardDescription>
+                </CardHeader>
 
-                <div className="card-footer-auto row-actions">
+                <CardFooter className="flex gap-3 mt-auto pt-4 border-t border-border/50">
                   {lecture.sessionStatus === 'Scheduled' && (
-                    <button 
+                    <Button 
                       onClick={() => handleShiftChange(lecture._id, 'Active')}
-                      className="btn btn-primary flex-1"
+                      className="flex-1 gap-2"
                     >
                       <FiPlayCircle size={18} /> Start Session
-                    </button>
+                    </Button>
                   )}
                   {lecture.sessionStatus === 'Active' && (
-                    <button 
+                    <Button 
+                      variant="destructive"
                       onClick={() => handleShiftChange(lecture._id, 'Ended')}
-                      className="btn btn-danger flex-1"
+                      className="flex-1 gap-2 shadow-lg shadow-destructive/20"
                     >
                       <FiStopCircle size={18} /> End Session & Lock
-                    </button>
+                    </Button>
                   )}
                   {lecture.sessionStatus === 'Ended' && (
-                    <button 
+                    <Button 
                       disabled
-                      className="btn btn-secondary flex-1"
+                      variant="secondary"
+                      className="flex-1 opacity-60"
                     >
-                      Session Closed
-                    </button>
+                      Session Ended
+                    </Button>
                   )}
-                  <button 
+                  
+                  {/* Attendance View Button */}
+                  <Button 
+                    variant="outline"
                     onClick={() => fetchLectureAttendance(lecture)}
-                    className="btn btn-outline flex-1"
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                    className="flex-1 gap-2"
                   >
-                    <FiEye size={18} /> View Present
-                  </button>
-                </div>
-              </div>
+                    <FiUsers size={18} /> View Attendance
+                  </Button>
+                </CardFooter>
+              </Card>
             ))}
           </div>
         )}
       </div>
 
-      <div className="card-glass grid-2">
-        <div>
-          <h3 className="section-title-sm">Quick Tips</h3>
-          <ul className="tips-list">
-            <li>Click <strong>Start Session</strong> when you enter the physical classroom.</li>
-            <li>Once started, students will see the 'Mark Present' button on their dashboards.</li>
-            <li>Click <strong>End Session</strong> right before leaving. Any student who didn't biometric-scan will be auto-marked absent.</li>
-          </ul>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start mt-8">
+        <Card className="border-primary/20 bg-secondary/10">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <FiInfo className="text-primary" /> Quick Tips
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
+              <li>Click <strong className="text-foreground">Start Session</strong> when you enter the physical classroom.</li>
+              <li>Once started, students will see the 'Mark Present' button on their dashboards.</li>
+              <li>Click <strong className="text-foreground">End Session</strong> right before leaving. Any student who didn't biometric-scan will be auto-marked absent.</li>
+            </ul>
+          </CardContent>
+        </Card>
+        
+        <FeatureHub title="Teacher Features" items={teacherFeatures} />
       </div>
 
-      <FeatureHub title="Teacher Features" items={teacherFeatures} />
-
       {selectedLectureInfo && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex',
-          alignItems: 'center', justifyContent: 'center'
-        }} onClick={closeAttendanceModal}>
-          <div style={{
-            background: '#1a1a1a', borderRadius: '12px', padding: '1.5rem',
-            width: '90%', maxWidth: '500px', border: '1px solid #333',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
-          }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid #333', paddingBottom: '1rem' }}>
-              <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#ccff00' }}>Attendance: {selectedLectureInfo.subject.name} (Div {selectedLectureInfo.division})</h2>
-              <button onClick={closeAttendanceModal} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '1.5rem' }}>&times;</button>
-            </div>
-            <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-              {isLoadingAttendance ? (
-                <div style={{ textAlign: 'center', padding: '1rem', color: '#aaa' }}>Loading attendance...</div>
-              ) : attendanceRecords.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '1rem', color: '#aaa' }}>No students marked present yet.</div>
-              ) : (
-                <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
-                  {attendanceRecords.map((record, i) => (
-                    <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.8rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <strong style={{ fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff' }}>
-                          <FiCheckCircle color="#10b981" /> {record.user?.name || 'Unknown Student'}
-                        </strong>
-                        <span style={{ fontSize: '0.9rem', color: '#ccc' }}>{record.user?.email || 'No email provided'}</span>
-                        <span style={{ fontSize: '0.85rem', color: '#888' }}>Time: {new Date(record.createdAt).toLocaleTimeString()}</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm" onClick={closeAttendanceModal}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-2xl max-h-[85vh]">
+            <Card className="w-full flex flex-col shadow-2xl border-primary/20">
+              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border/50">
+                <div>
+                  <CardTitle>{selectedLectureInfo.subject.name} Attendance</CardTitle>
+                  <CardDescription>
+                    Div {selectedLectureInfo.division}
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" size="icon" onClick={closeAttendanceModal}>
+                  &times;
+                </Button>
+              </CardHeader>
+              
+              <CardContent className="overflow-y-auto p-4 md:p-6 space-y-4 min-h-[300px]">
+                {isLoadingAttendance ? (
+                  <div className="flex items-center justify-center h-40 text-muted-foreground">
+                    <FiClock className="animate-spin mr-2" /> Loading records...
+                  </div>
+                ) : attendanceRecords.length === 0 ? (
+                  <div className="text-center text-muted-foreground p-8">
+                    <FiUsers size={48} className="mx-auto mb-4 opacity-20" />
+                    <p>No students marked present yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3">
+                    {attendanceRecords.map((record, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-border bg-secondary/30">
+                        <div>
+                          <div className="font-medium text-foreground">{record.user?.name || 'Unknown Student'}</div>
+                          <div className="text-xs text-muted-foreground">{record.user?.email || 'No email provided'}</div>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant="default" className="gap-1 px-3 mb-1 bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30">
+                            <FiCheckCircle size={12} /> Present
+                          </Badge>
+                          <div className="text-[10px] text-muted-foreground">
+                            {new Date(record.createdAt).toLocaleTimeString()}
+                          </div>
+                        </div>
                       </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div style={{ marginTop: '1.5rem', textAlign: 'right', paddingTop: '1rem', borderTop: '1px solid #333' }}>
-              <button style={{ padding: '0.5rem 1rem', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }} onClick={closeAttendanceModal}>Close</button>
-            </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+
+              <CardFooter className="pt-4 border-t border-border/50">
+                <Button variant="outline" className="w-full" onClick={closeAttendanceModal}>
+                  Close
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
         </div>
       )}
