@@ -22,18 +22,25 @@ export default function LoginPage() {
       // 1. Instantly load AI model to verify a face even exists in the frame
       const MODEL_URL = '/models';
       await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
       
       const img = new Image();
       img.src = base64Image;
       await new Promise(resolve => img.onload = resolve);
       
-      const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions());
+      const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
       if (!detections) {
         throw new Error("No face detected in the webcam frame. Please look at the camera.");
       }
 
+      const descriptor = Array.from(detections.descriptor);
+
       // 2. Face found! Proceed to server authentication
-      const user = await login(email, password, base64Image);
+      const user = await login(email, password, base64Image, descriptor);
       // Let ProtectedRoute handle specific redirects, or navigate directly
       if (user.role === 'Student') navigate('/student');
       else if (user.role === 'Teacher') navigate('/teacher');

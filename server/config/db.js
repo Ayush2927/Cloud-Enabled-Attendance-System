@@ -6,11 +6,12 @@ const connectDB=async()=>{
      console.log("Mongo DB connected");
      
      try {
-       await conn.connection.db.collection('attendances').dropIndex('user_1_date_1');
-       console.log("Dropped problematic index user_1_date_1");
+       // Drop all indexes except _id to clear any lingering unique constraints 
+       // (Mongoose will automatically rebuild the correct ones defined in the schema)
+       await conn.connection.db.collection('attendances').dropIndexes();
+       console.log("Cleared old indexes from attendances collection");
      } catch (idxError) {
-       // Ignore if index doesn't exist
-       console.log("Index user_1_date_1 might not exist or already dropped");
+       console.log("Could not clear indexes - collection might not exist yet");
      }
  
    } catch (error) {

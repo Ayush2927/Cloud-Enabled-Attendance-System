@@ -41,8 +41,8 @@ const attendanceSchema = new Schema({
     }
 }, { timestamps: true });
 
-// Unique compound index: one attendance record per user per lecture
-attendanceSchema.index({ user: 1, lecture: 1 }, { unique: true });
+// Query optimization: find attendance by user, lecture and date (you probably don't want a strict unique constraint if "sessions" can restart on the same day for the same lecture, or maybe you do: user_1_lecture_1_date_1)
+attendanceSchema.index({ user: 1, lecture: 1, date: 1 });
 
 // Query optimization: find attendance by lecture and status
 attendanceSchema.index({ lecture: 1, status: 1 });

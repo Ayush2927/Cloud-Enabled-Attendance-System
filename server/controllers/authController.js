@@ -94,13 +94,13 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-    const { email, password, liveFaceImage } = req.body;
+    const { email, password, liveFaceImage, liveFaceDescriptor } = req.body;
 
     if (!email || !password || !liveFaceImage) {
         throw new ApiError(400, "Email, password and face image is required for successful login");
     }
 
-    const user = await User.findOne({ email: String(email) });
+    const user = await User.findOne({ email: String(email) }).select("+password");
 
     if (!user) {
         throw new ApiError(404, "User not found");
@@ -112,14 +112,28 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Invalid password");
     }
 
-    if (!user.faceData) {
+    if (!user.faceData || !user.faceDescriptor || user.faceDescriptor.length === 0) {
         throw new ApiError(400, "User has no registered Face ID");
     }
 
-    // TODO: Replace with real server-side face comparison (e.g., AWS Rekognition, face-api.js on server)
-    // Current check is a placeholder — validates that a base64 image payload was sent
     if (!isLikelyBase64Image(liveFaceImage)) {
         throw new ApiError(401, "Biometric verification failed — invalid face image");
+    }
+
+    if (liveFaceDescriptor && liveFaceDescriptor.length === 128) {
+        // Verify against registered face descriptor
+        const DISTANCE_THRESHOLD = 0.55; // Using 0.55 for standard leniency
+        let distance = 0;
+        for (let i = 0; i < 128; i++) {
+            distance += Math.pow(user.faceDescriptor[i] - liveFaceDescriptor[i], 2);
+        }
+        distance = Math.sqrt(distance);
+
+        if (distance > DISTANCE_THRESHOLD) {
+            throw new ApiError(401, `Biometric verification failed — face doesn't match registered user (Diff: ${distance.toFixed(2)})`);
+        }
+    } else {
+        throw new ApiError(400, "Biometric verification failed — no face descriptor provided");
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);

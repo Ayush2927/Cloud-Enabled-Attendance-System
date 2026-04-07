@@ -19,9 +19,9 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password, liveFaceImage) => {
+  const login = async (email, password, liveFaceImage, liveFaceDescriptor) => {
     try {
-      const response = await api.post('/auth/login', { email, password, liveFaceImage });
+      const response = await api.post('/auth/login', { email, password, liveFaceImage, liveFaceDescriptor });
       const userData = response.data.data.user;
       const token = response.data.data.accessToken;
       const refreshToken = response.data.data.refreshToken;
