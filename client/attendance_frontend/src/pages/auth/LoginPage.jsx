@@ -3,6 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import WebcamCapture from '../../components/WebcamCapture';
 import * as faceapi from 'face-api.js';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -46,52 +50,59 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="card-glass auth-card">
-        <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-          <h1 className="auth-logo">AttendEase</h1>
-          <h2 className="auth-title">Welcome back</h2>
-          <p className="auth-subtitle">Login with your credentials and biometric verification</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-2 text-center">
+          <CardTitle className="text-3xl font-bold text-accent">AttendEase</CardTitle>
+          <h2 className="text-2xl font-semibold">Welcome back</h2>
+          <CardDescription>
+            Login with your credentials and biometric verification
+          </CardDescription>
+        </CardHeader>
 
-        <form className="auth-form" onSubmit={e => e.preventDefault()}>
-          <div className="form-group">
-            <label className="form-label">Email Address</label>
-            <input 
-              type="email" 
-              className="form-input" 
-              placeholder="you@college.edu" 
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              disabled={isLoading}
-            />
+        <CardContent className="space-y-6">
+          <form onSubmit={e => e.preventDefault()} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input 
+                id="email"
+                type="email" 
+                placeholder="you@college.edu" 
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input 
+                id="password"
+                type="password" 
+                placeholder="••••••••" 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label>Biometric Verification</Label>
+              <WebcamCapture onCapture={handleCapture} isLoading={isLoading} />
+              <p className="text-xs text-muted-foreground text-center">
+                A live face scan is required to authenticate.
+              </p>
+            </div>
+          </form>
+
+          <div className="pt-2 text-center text-sm">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-accent hover:text-accent/80 font-semibold">
+              Request Registration
+            </Link>
           </div>
-
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input 
-              type="password" 
-              className="form-input" 
-              placeholder="••••••••" 
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              disabled={isLoading}
-            />
-          </div>
-
-          <div style={{ marginTop: 'var(--space-4)' }}>
-            <label className="form-label" style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Biometric Verification</label>
-            <WebcamCapture onCapture={handleCapture} isLoading={isLoading} />
-            <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-muted)', textAlign: 'center', marginTop: 'var(--space-2)' }}>
-              A live face scan is required to authenticate.
-            </p>
-          </div>
-        </form>
-
-        <div className="auth-footer">
-          Don't have an account? <Link to="/register">Request Registration</Link>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
