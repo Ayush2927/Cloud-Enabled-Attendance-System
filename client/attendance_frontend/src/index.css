@@ -58,6 +58,24 @@
 
   --sidebar-width: 268px;
   --navbar-height: 64px;
+
+  /* shadcn/ui Theme Variables (mapped to existing colors) */
+  --background: 5 1% 4%;
+  --foreground: 216 14% 97%;
+  --card: 216 13% 16%;
+  --card-foreground: 216 14% 97%;
+  --popover: 216 13% 16%;
+  --popover-foreground: 216 14% 97%;
+  --muted: 216 7% 51%;
+  --muted-foreground: 216 7% 51%;
+  --accent: 75 97% 44%;
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 216 13% 18%;
+  --input: 216 13% 7%;
+  --ring: 75 97% 44%;
+  --radius: 0px;
 }
 
 *,
