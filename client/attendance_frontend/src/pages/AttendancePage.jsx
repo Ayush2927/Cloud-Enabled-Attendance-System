@@ -93,7 +93,10 @@ export default function AttendancePage() {
             const distance = faceapi.euclideanDistance(refResults.descriptor, liveResults.descriptor);
             console.log("Face Match distance:", distance);
             
-            return distance < 0.42;
+            return {
+                isMatch: distance < 0.42,
+                descriptor: Array.from(liveResults.descriptor)
+            };
         } catch (error) {
             throw error;
         }
@@ -116,7 +119,7 @@ export default function AttendancePage() {
             setStatus('Comparing faces... Stay still.');
             
             // 2. Run Face-API match natively in browser
-            const isMatch = await performFaceMatch(storedFace, liveFaceImage);
+            const { isMatch, descriptor } = await performFaceMatch(storedFace, liveFaceImage);
 
             if (isMatch) {
                 setStatus('✅ Match Found! Securing attendance record...');
@@ -124,7 +127,8 @@ export default function AttendancePage() {
                 // 3. Inform server (Server performs window/duplicate checks)
                 await api.post('/attendance/student/mark', {
                     lectureId,
-                    liveFaceImage
+                    liveFaceImage,
+                    liveFaceDescriptor: descriptor
                 });
 
                 toast.success('Successfully marked present!');

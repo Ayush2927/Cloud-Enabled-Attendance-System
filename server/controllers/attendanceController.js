@@ -11,17 +11,19 @@ const isLikelyBase64Image = (value) => {
 };
 
 const markStudentAttendance = asyncHandler(async (req, res) => {
-    const { lectureId, liveFaceImage } = req.body;
+    const { lectureId, liveFaceImage, liveFaceDescriptor } = req.body;
     const studentId = req.user._id;
 
-    if (!lectureId || !liveFaceImage) {
-        throw new ApiError(400, "lectureId and liveFaceImage are required");
+    if (!lectureId || !liveFaceImage || !liveFaceDescriptor) {
+        throw new ApiError(400, "lectureId, liveFaceImage, and liveFaceDescriptor are required");
     }
 
-    // TODO: Replace with real server-side face comparison
-    // For now, validate that the client sent a proper base64 image payload.
     if (!isLikelyBase64Image(liveFaceImage)) {
         throw new ApiError(401, "Biometric face detection failed, no clear face detected");
+    }
+
+    if (!Array.isArray(liveFaceDescriptor) || liveFaceDescriptor.length !== 128) {
+        throw new ApiError(400, "Invalid face descriptor provided");
     }
 
     const lecture = await Lecture.findById(lectureId);
@@ -41,29 +43,62 @@ const markStudentAttendance = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Attendance window has been closed, session started more than 15 minutes ago");
     }
 
-    // Duplicate check
-    const existingRecord = await Attendance.findOne({
-        user: studentId,
-        lecture: lectureId
-    });
-
-    if (existingRecord) {
-        throw new ApiError(400, "You have already marked attendance for this lecture");
+    // Fetch user with face descriptor
+    const user = await User.findById(studentId).select("+faceDescriptor");
+    
+    if (!user || !user.faceDescriptor || user.faceDescriptor.length === 0) {
+        throw new ApiError(400, "User has no registered biometric ID");
     }
 
-    const record = await Attendance.create({
-        user: studentId,
-        subject: lecture.subject,
-        lecture: lectureId,
-        date: getTodayDateString(),
-        status: "Present",
-        capturedFace: liveFaceImage
-    });
+    // Face-API Euclidean Distance Comparison with STRICT threshold
+    const DISTANCE_THRESHOLD = 0.42;
+    let distance = 0;
+    for (let i = 0; i < 128; i++) {
+        distance += Math.pow(user.faceDescriptor[i] - liveFaceDescriptor[i], 2);
+    }
+    distance = Math.sqrt(distance);
+
+    if (distance > DISTANCE_THRESHOLD) {
+        throw new ApiError(401, `Biometric verification failed — face doesn't match registered user (Diff: ${distance.toFixed(2)})`);
+    }
+
+    // RACE CONDITION FIX: Use atomic findOneAndUpdate with upsert
+    // This prevents duplicate records even if multiple requests arrive simultaneously
+    const today = getTodayDateString();
+    
+    const record = await Attendance.findOneAndUpdate(
+        {
+            user: studentId,
+            lecture: lectureId,
+            date: today
+        },
+        {
+            user: studentId,
+            subject: lecture.subject,
+            lecture: lectureId,
+            date: today,
+            status: "Present",
+            capturedFace: liveFaceImage
+        },
+        {
+            upsert: true,
+            new: true,
+            runValidators: true
+        }
+    );
+
+    // Check if this was an existing record (not newly created)
+    const isNewRecord = !record.createdAt || 
+                       (Date.now() - new Date(record.createdAt).getTime()) < 1500;
+
+    if (!isNewRecord && record.status === "Present") {
+        throw new ApiError(400, "You have already marked attendance for this lecture");
+    }
 
     return res.status(201).json(
         new ApiResponse(201, {
             ...record._doc,
-            markedAtIst: formatToIST(record.createdAt)
+            markedAtIst: formatToIST(record.createdAt || new Date())
         }, "Attendance marked successfully")
     );
 });
