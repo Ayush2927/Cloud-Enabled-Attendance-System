@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://cloud-enabled-attendance-system-hxlg.onrender.com',
+        target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false, // Bypass SSL validation if needed in dev proxy
       }
