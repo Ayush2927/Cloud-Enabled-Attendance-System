@@ -1,34 +1,14 @@
-import { useState } from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
+import { Outlet } from "react-router-dom";
+import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 
 export default function Layout() {
-  const { user, isAuthenticated, loading } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  if (loading) {
-    return <div className="loading-screen">Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
   return (
-    <div className="layout-shell">
-      <Navbar onToggleSidebar={() => setSidebarOpen(prev => !prev)} />
-      <div className="layout-body">
-        <Sidebar userRole={user?.role} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        {/* Mobile overlay when sidebar is open */}
-        {sidebarOpen && (
-          <div
-            className="sidebar-overlay"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-        <main className="layout-main">
+    <div className="app-layout min-h-screen bg-gray-50 flex flex-col">
+      <Navbar />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar className="hidden md:block w-64 flex-shrink-0" />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

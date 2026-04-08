@@ -33,8 +33,12 @@ export default function RegisterPage() {
       ]);
       
       const img = new Image();
+      const imgLoadPromise = new Promise((resolve, reject) => {
+        img.onload = () => resolve(img);
+        img.onerror = (err) => reject(new Error("Failed to load image for scanning"));
+      });
       img.src = base64Image;
-      await new Promise(resolve => img.onload = resolve);
+      await imgLoadPromise;
       
       const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
                                       .withFaceLandmarks()

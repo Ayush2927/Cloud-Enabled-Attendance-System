@@ -26,8 +26,12 @@ export default function LoginPage() {
       await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
       
       const img = new Image();
+      const imgLoadPromise = new Promise((resolve, reject) => {
+        img.onload = () => resolve(img);
+        img.onerror = (err) => reject(new Error("Failed to load image for scanning"));
+      });
       img.src = base64Image;
-      await new Promise(resolve => img.onload = resolve);
+      await imgLoadPromise;
       
       const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
         .withFaceLandmarks()
@@ -42,11 +46,13 @@ export default function LoginPage() {
       // 2. Face found! Proceed to server authentication
       const user = await login(email, password, base64Image, descriptor);
       // Let ProtectedRoute handle specific redirects, or navigate directly
-      if (user.role === 'Student') navigate('/student');
-      else if (user.role === 'Teacher') navigate('/teacher');
-      else if (user.role === 'Admin') navigate('/admin');
+      if (user?.role === 'Student') navigate('/student');
+      else if (user?.role === 'Teacher') navigate('/teacher');
+      else if (user?.role === 'Admin') navigate('/admin');
     } catch (error) {
       // toast is handled in AuthContext
+      console.error("Login face scan error:", error);
+      alert(error.message || "Failed to process face scan.");
     } finally {
       setIsLoading(false);
     }
