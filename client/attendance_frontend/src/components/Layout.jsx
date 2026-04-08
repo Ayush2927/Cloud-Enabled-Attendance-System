@@ -1,14 +1,19 @@
 import { Outlet } from "react-router-dom";
+import { useState } from "react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import { useAuth } from "../context/AuthContext";
 
 export default function Layout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuth();
+
   return (
-    <div className="app-layout min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar className="hidden md:block w-64 flex-shrink-0" />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+    <div className="layout-shell">
+      <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+      <div className="layout-body">
+        <Sidebar userRole={user?.role} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <main className="layout-main">
           <Outlet />
         </main>
       </div>
