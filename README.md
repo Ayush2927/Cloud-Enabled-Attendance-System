@@ -254,8 +254,6 @@ OUTPUT: Attendance Record / Retry
 
 <div align="center">
 
-**Made with ❤️ by [Ayush](https://github.com/Ayush2927)**
 
-⭐ If this project helped you, please star it on GitHub!
 
 </div>
