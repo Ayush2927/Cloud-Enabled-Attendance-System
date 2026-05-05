@@ -17,6 +17,7 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+      <footer style={{ display: 'none' }}>AttendEase © 2026</footer>
     </div>
   );
 }

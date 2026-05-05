@@ -25,7 +25,7 @@ export default function Sidebar({ userRole, isOpen, onClose }) {
   const currentLinks = navLinks[userRole] || [];
 
   return (
-    <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
+    <nav className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
       <div className="sidebar-menu-label">
         Menu
       </div>
@@ -52,6 +52,6 @@ export default function Sidebar({ userRole, isOpen, onClose }) {
           <FiSettings /> Settings
         </NavLink>
       </div>
-    </aside>
+    </nav>
   );
 }

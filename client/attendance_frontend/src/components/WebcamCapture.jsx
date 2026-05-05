@@ -88,6 +88,7 @@ export default function WebcamCapture({ onCapture, isLoading }) {
           onClick={startCamera} 
           className="btn btn-secondary" 
           disabled={isLoading}
+          style={{ minHeight: '48px', minWidth: '48px' }}
         >
           <FiCamera size={18} /> Enable Camera
         </button>
@@ -107,7 +108,7 @@ export default function WebcamCapture({ onCapture, isLoading }) {
               onClick={captureFrame} 
               className="btn btn-primary"
               disabled={isLoading}
-              style={{ boxShadow: 'var(--glass-shadow)', borderRadius: 'var(--radius-full)', padding: 'var(--space-2) var(--space-6)' }}
+              style={{ boxShadow: 'var(--glass-shadow)', borderRadius: 'var(--radius-full)', padding: 'var(--space-2) var(--space-6)', minHeight: '48px', minWidth: '48px' }}
             >
               <FiCamera size={18} /> {isLoading ? 'Scanning...' : 'Capture Face'}
             </button>
